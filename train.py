@@ -10,7 +10,7 @@ import logging
 from config import option
 import argparse
 import torch
-from trainer import trainer_Dual_RNN
+from trainer import trainer
 
 
 def make_dataloader(opt):
@@ -83,7 +83,7 @@ def train():
     
     # build trainer
     logger.info('Building the Trainer of Dual-Path-RNN')
-    trainer = trainer_Dual_RNN.Trainer(train_dataloader, val_dataloader, Dual_Path_RNN, optimizer, scheduler, opt)
+    trainer = trainer.Trainer(train_dataloader, val_dataloader, Dual_Path_RNN, optimizer, scheduler, opt)
     trainer.run()
 
 

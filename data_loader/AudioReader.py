@@ -2,7 +2,7 @@ import sys
 sys.path.append('../')
 import torchaudio
 import torch
-from utils.util import handle_scp
+from utils.funtctional import handle_scp
 
 
 def read_wav(fname, return_rate=False):

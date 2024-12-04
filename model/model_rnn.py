@@ -4,7 +4,7 @@ sys.path.append('../')
 import torch.nn.functional as F
 from torch import nn
 import torch
-from utils.util import check_parameters
+from utils.funtctional import check_parameters
 
 import warnings
 

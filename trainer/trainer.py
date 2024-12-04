@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../')
 
-from utils.util import check_parameters
+from utils.funtctional import check_parameters
 import time
 import logging
 from logger.set_logger import setup_logger

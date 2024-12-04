@@ -1,5 +1,5 @@
 import torch.nn.functional as F
-from utils import util
+from utils import funtctional
 import torch
 import torchaudio
 import sys
@@ -53,7 +53,7 @@ class AudioReader(object):
     def __init__(self, scp_path, sample_rate=8000, chunk_size=32000, least_size=16000):
         super(AudioReader, self).__init__()
         self.sample_rate = sample_rate
-        self.index_dict = util.handle_scp(scp_path)
+        self.index_dict = funtctional.handle_scp(scp_path)
         self.keys = list(self.index_dict.keys())
         self.audio = []
         self.chunk_size = chunk_size
