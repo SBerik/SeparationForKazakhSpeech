@@ -24,7 +24,7 @@ def main(hparams_file):
     train_dataloader, val_dataloader = make_dataloader(**cfg['data'])
     dataloaders = {'train': train_dataloader, 'valid': val_dataloader}
     # Load model
-    model = Dual_RNN_model(**opt['Dual_Path_RNN'])(**cfg['model'])
+    model = Dual_RNN_model(**cfg['Dual_Path_RNN'])
     # Meta-data
     metadata_info(model)
     # TensorBoard
