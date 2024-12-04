@@ -1,0 +1,47 @@
+xp_config:
+  model_type: Dual_Path_RNN
+  dataset: ISSAI_KSC2
+  use_tb_logger: false
+  num_spks: 2
+
+data:
+  data_mixed: ./mixed_data/
+  data_targets: ./targets/
+  train_percent: 0.8
+  valid_percent: 0.1
+  test_percent: 0.1
+  shuffle: true
+  num_workers: 1  
+  batch_size: 1
+  sample_rate: 16000
+  chunk_size: 32000
+  least_size: 16000
+  
+model:
+  in_channels: 256
+  out_channels: 64 
+  hidden_channels: 128
+  kernel_size: 2
+  rnn_type: LSTM
+  norm: ln
+  dropout: 0
+  bidirectional: true
+  num_layers: 6
+  K: 250
+  speakers_num: 2
+
+trainer:
+  epoch: 100
+  device: 'cuda'
+  path: /home/likai/data1/Dual-Path-RNN/checkpoint
+  resume: false
+  checkpoint_interval: 5
+  model_name: VADNet 
+  path_to_weights: './weights'
+
+train:
+  optim: Adam   ### Adam, RMSprop, SGD
+  lr: !!float 5e-4
+  momentum: 0
+  weight_decay: 0
+  clip_norm: 5

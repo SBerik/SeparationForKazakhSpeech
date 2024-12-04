@@ -3,7 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 import sys
 sys.path.append('../')
-from utils.util import check_parameters
+from utils.funtctional import check_parameters
 
 class GlobalLayerNorm(nn.Module):
     '''
