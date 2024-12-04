@@ -1,1 +1,12 @@
+__pycache__/
+.ipynb_checkpoints/
 
+data/
+
+.venv/
+
+tb_logs/
+
+checkpoints/
+
+weights/
