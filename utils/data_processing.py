@@ -17,16 +17,3 @@ def read_wav(fname, return_rate=False):
         return src.squeeze(), sr
     else:
         return src.squeeze()
-
-
-def write_wav(fname, src, sample_rate):
-    '''
-         Write wav file
-         input:
-               fname: wav file path
-               src: frames of audio
-               sample_rate: An integer which is the sample rate of the audio
-         output:
-               None
-    '''
-    torchaudio.save(fname, src, sample_rate)

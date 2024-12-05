@@ -1,85 +1,95 @@
-import numpy as np
+import os
+import random
+import math
+from glob import glob
+import torch as th
 import torchaudio
-import torch
+import pytorch_lightning as pl
+from typing import Optional, List
+import torch.nn.functional as F
 
-from utils.funtctional import handle_scp
-from utils.data_processing import read_wav
-from torch.utils.data import DataLoader as Loader
-
-def make_dataloader(opt):
-    # make train's dataloader
-    
-    train_dataset = Datasets(
-        opt['datasets']['train']['dataroot_mix'],
-        [opt['datasets']['train']['dataroot_targets'][0],
-         opt['datasets']['train']['dataroot_targets'][1]],
-        **opt['datasets']['audio_setting'])
-    train_dataloader = Loader(train_dataset,
-                              batch_size=opt['datasets']['dataloader_setting']['batch_size'],
-                              num_workers=opt['datasets']['dataloader_setting']['num_workers'],
-                              shuffle=opt['datasets']['dataloader_setting']['shuffle'])
-    
-    # make validation dataloader
-    
-    val_dataset = Datasets(
-        opt['datasets']['val']['dataroot_mix'],
-        [opt['datasets']['val']['dataroot_targets'][0],
-         opt['datasets']['val']['dataroot_targets'][1]],
-        **opt['datasets']['audio_setting'])
-    val_dataloader = Loader(val_dataset,
-                            batch_size=opt['datasets']['dataloader_setting']['batch_size'],
-                            num_workers=opt['datasets']['dataloader_setting']['num_workers'],
-                            shuffle=False)
-    
-    return train_dataloader, val_dataloader
+EPS = 1e-8
 
 
-class AudioReader(object):
-    def __init__(self, scp_path, sample_rate=8000):
-        super(AudioReader, self).__init__()
-        self.sample_rate = sample_rate
-        self.index_dict = handle_scp(scp_path)
-        self.keys = list(self.index_dict.keys())
-
-    def _load(self, key):
-        src, sr = read_wav(self.index_dict[key], return_rate=True)
-        if self.sample_rate is not None and sr != self.sample_rate:
-            raise RuntimeError('SampleRate mismatch: {:d} vs {:d}'.format(
-                sr, self.sample_rate))
-        return src
-
-    def __len__(self):
-        return len(self.keys)
-
-    def __iter__(self):
-        for key in self.keys:
-            yield key, self._load(key)
-
-    def __getitem__(self, index):
-        if type(index) not in [int, str]:
-            raise IndexError('Unsupported index type: {}'.format(type(index)))
-        if type(index) == int:
-            num_uttrs = len(self.keys)
-            if num_uttrs < index and index < 0:
-                raise KeyError('Interger index out of range, {:d} vs {:d}'.format(
-                    index, num_uttrs))
-            index = self.keys[index]
-        if index not in self.index_dict:
-            raise KeyError("Missing utterance {}!".format(index))
-
-        return self._load(index)
-    
-
-class Datasets(torch.utils.data.Dataset):
-    def __init__(self, mix_scp=None, ref_scp=None, sample_rate=8000, chunk_size=32000, least_size=16000):
-        super(Datasets, self).__init__()
-        self.mix_audio = AudioReader(
-            mix_scp, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio
-        self.ref_audio = [AudioReader(
-            r, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio for r in ref_scp]
+class AudioDataset(th.utils.data.Dataset):
+    def __init__(self, mix_paths: List[str], ref_paths: List[List[str]], 
+                 sample_rate: int = 8000, chunk_size: int = 32000, least_size: int = 16000):
+        super().__init__()
+        self.mix_audio = self._load_audio(mix_paths, sample_rate, chunk_size, least_size)
+        self.ref_audio = [self._load_audio(ref, sample_rate, chunk_size, least_size) for ref in ref_paths]
 
     def __len__(self):
         return len(self.mix_audio)
 
-    def __getitem__(self, index):
-        return self.mix_audio[index], [ref[index] for ref in self.ref_audio]
+    def __getitem__(self, idx):
+        mix = self.mix_audio[idx]
+        refs = [ref[idx] for ref in self.ref_audio]
+        return mix, refs
+
+    @staticmethod
+    def _load_audio(paths: List[str], sample_rate: int, chunk_size: int, least_size: int):
+        audios = []
+        for path in paths:
+            audio, sr = torchaudio.load(path)
+            if sr != sample_rate:
+                raise RuntimeError(f"Sample rate mismatch: {sr} vs {sample_rate}")
+
+            # Pad or chunk the audio
+            if audio.shape[-1] < least_size:
+                continue
+            if least_size <= audio.shape[-1] < chunk_size:
+                pad_size = chunk_size - audio.shape[-1]
+                audios.append(F.pad(audio, (0, pad_size), mode='constant'))
+            else:
+                start = 0
+                while start + chunk_size <= audio.shape[-1]:
+                    audios.append(audio[:, start:start + chunk_size])
+                    start += least_size
+        return audios
+
+
+class AudioDataModule(pl.LightningDataModule):
+    def __init__(self, mix_dir: str, ref_dirs: List[str], batch_size: int = 128, 
+                 train_split: float = 0.8, val_split: float = 0.1, sample_rate: int = 8000, 
+                 chunk_size: int = 32000, least_size: int = 16000, num_workers: int = 4, seed: int = 42):
+        super().__init__()
+        self.batch_size = batch_size
+        self.sample_rate = sample_rate
+        self.chunk_size = chunk_size
+        self.least_size = least_size
+        self.num_workers = num_workers
+        self.seed = seed
+
+        self.mix_paths = glob(os.path.join(mix_dir, "*.wav"))
+        self.ref_paths = [glob(os.path.join(ref_dir, "*.wav")) for ref_dir in ref_dirs]
+
+        random.seed(seed)
+        random.shuffle(self.mix_paths)
+
+        total = len(self.mix_paths)
+        train_end = int(total * train_split)
+        val_end = train_end + int(total * val_split)
+
+        self.train_paths = self.mix_paths[:train_end]
+        self.val_paths = self.mix_paths[train_end:val_end]
+        self.test_paths = self.mix_paths[val_end:]
+
+    def setup(self, stage: Optional[str] = None):
+        self.train_dataset = AudioDataset(self.train_paths, self.ref_paths, 
+                                          self.sample_rate, self.chunk_size, self.least_size)
+        self.val_dataset = AudioDataset(self.val_paths, self.ref_paths, 
+                                        self.sample_rate, self.chunk_size, self.least_size)
+        self.test_dataset = AudioDataset(self.test_paths, self.ref_paths, 
+                                         self.sample_rate, self.chunk_size, self.least_size)
+
+    def train_dataloader(self):
+        return th.utils.data.DataLoader(self.train_dataset, batch_size=self.batch_size, 
+                                        shuffle=True, num_workers=self.num_workers)
+
+    def val_dataloader(self):
+        return th.utils.data.DataLoader(self.val_dataset, batch_size=self.batch_size, 
+                                        shuffle=False, num_workers=self.num_workers)
+
+    def test_dataloader(self):
+        return th.utils.data.DataLoader(self.test_dataset, batch_size=self.batch_size, 
+                                        shuffle=False, num_workers=self.num_workers)

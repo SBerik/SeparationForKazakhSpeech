@@ -170,7 +170,7 @@ class Dual_RNN_Block(nn.Module):
 
     def __init__(self, out_channels,
                  hidden_channels, rnn_type='LSTM', norm='ln',
-                 dropout=0, bidirectional=False, num_spks=2):
+                 dropout=0, bidirectional=False, speaker_num=2):
         super(Dual_RNN_Block, self).__init__()
         # RNN model
         self.intra_rnn = getattr(nn, rnn_type)(
@@ -241,15 +241,15 @@ class Dual_Path_RNN(nn.Module):
             bidirectional: If True, becomes a bidirectional LSTM. Default: False
             num_layers: number of Dual-Path-Block
             K: the length of chunk
-            num_spks: the number of speakers
+            speaker_num: the number of speakers
     '''
 
     def __init__(self, in_channels, out_channels, hidden_channels,
                  rnn_type='LSTM', norm='ln', dropout=0,
-                 bidirectional=False, num_layers=4, K=200, num_spks=2):
+                 bidirectional=False, num_layers=4, K=200, speaker_num=2):
         super(Dual_Path_RNN, self).__init__()
         self.K = K
-        self.num_spks = num_spks
+        self.speaker_num = speaker_num
         self.num_layers = num_layers
         self.norm = select_norm(norm, in_channels, 3)
         self.conv1d = nn.Conv1d(in_channels, out_channels, 1, bias=False)
@@ -261,7 +261,7 @@ class Dual_Path_RNN(nn.Module):
                                      bidirectional=bidirectional))
 
         self.conv2d = nn.Conv2d(
-            out_channels, out_channels*num_spks, kernel_size=1)
+            out_channels, out_channels*speaker_num, kernel_size=1)
         self.end_conv1x1 = nn.Conv1d(out_channels, in_channels, 1, bias=False)
         self.prelu = nn.PReLU()
         self.activation = nn.ReLU()
@@ -291,7 +291,7 @@ class Dual_Path_RNN(nn.Module):
         x = self.conv2d(x)
         # [B*spks, N, K, S]
         B, _, K, S = x.shape
-        x = x.view(B*self.num_spks,-1, K, S)
+        x = x.view(B*self.speaker_num,-1, K, S)
         # [B*spks, N, L]
         x = self._over_add(x, gap)
         x = self.output(x)*self.output_gate(x)
@@ -299,7 +299,7 @@ class Dual_Path_RNN(nn.Module):
         x = self.end_conv1x1(x)
         # [B*spks, N, L] -> [B, spks, N, L]
         _, N, L = x.shape
-        x = x.view(B, self.num_spks, N, L)
+        x = x.view(B, self.speaker_num, N, L)
         x = self.activation(x)
         # [spks, B, N, L]
         x = x.transpose(0, 1)
@@ -381,18 +381,18 @@ class Dual_RNN_model(nn.Module):
             bidirectional: If True, becomes a bidirectional LSTM. Default: False
             num_layers: number of Dual-Path-Block
             K: the length of chunk
-            num_spks: the number of speakers
+            speaker_num: the number of speakers
     '''
     def __init__(self, in_channels, out_channels, hidden_channels,
                  kernel_size=2, rnn_type='LSTM', norm='ln', dropout=0,
-                 bidirectional=False, num_layers=4, K=200, num_spks=2):
+                 bidirectional=False, num_layers=4, K=200, speaker_num=2):
         super(Dual_RNN_model,self).__init__()
         self.encoder = Encoder(kernel_size=kernel_size,out_channels=in_channels)
         self.separation = Dual_Path_RNN(in_channels, out_channels, hidden_channels,
                  rnn_type=rnn_type, norm=norm, dropout=dropout,
-                 bidirectional=bidirectional, num_layers=num_layers, K=K, num_spks=num_spks)
+                 bidirectional=bidirectional, num_layers=num_layers, K=K, speaker_num=speaker_num)
         self.decoder = Decoder(in_channels=in_channels, out_channels=1, kernel_size=kernel_size, stride=kernel_size//2, bias=False)
-        self.num_spks = num_spks
+        self.speaker_num = speaker_num
     
     def forward(self, x):
         '''
@@ -403,8 +403,8 @@ class Dual_RNN_model(nn.Module):
         # [spks, B, N, L]
         s = self.separation(e)
         # [B, N, L] -> [B, L]
-        out = [s[i]*e for i in range(self.num_spks)]
-        audio = [self.decoder(out[i]) for i in range(self.num_spks)]
+        out = [s[i]*e for i in range(self.speaker_num)]
+        audio = [self.decoder(out[i]) for i in range(self.speaker_num)]
         return audio
 
 if __name__ == "__main__":

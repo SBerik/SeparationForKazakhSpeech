@@ -7,9 +7,6 @@ from torch.utils.tensorboard import SummaryWriter as TensorBoard
 
 from utils.load_config import load_config 
 from utils.training import metadata_info
-# from models import VADNet 
-# from dataset import *
-
 from dataset import make_dataloader
 from model.model_rnn import Dual_RNN_model
 from losses import loss
@@ -22,8 +19,8 @@ def main(hparams_file):
     # Loading config file    
     cfg, ckpt_folder = load_config(hparams_file)
     # Load data 
-    # train_dataloader, val_dataloader = make_dataloader(**cfg['data'])
-    # dataloaders = {'train': train_dataloader, 'valid': val_dataloader}
+    train_dataloader, val_dataloader = make_dataloader(**cfg['data'])
+    dataloaders = {'train': train_dataloader, 'valid': val_dataloader}
     # Load model
     model = Dual_RNN_model(**cfg['model'])
     # Meta-data
@@ -34,7 +31,6 @@ def main(hparams_file):
     assert cfg['training']["optim"] in ['Adam', 'SGD'], "Invalid optimizer type"
     optimizer = (torch.optim.Adam if cfg['training']["optim"] == 'Adam' else torch.optim.SGD) (model.parameters(), 
                  lr=cfg['training']["lr"], weight_decay=cfg['training']["weight_decay"])
-    return
     # Train
     Trainer(**cfg['trainer'], ckpt_folder = ckpt_folder).fit(model, dataloaders, loss, optimizer, writer)
 

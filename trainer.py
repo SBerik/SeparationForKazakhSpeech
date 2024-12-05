@@ -2,6 +2,7 @@ import torch
 from utils.measure_time import measure_time
 from utils.training import * 
 import os
+import time
 
 class Trainer(object):
     def __init__(self, train_dataloader, val_dataloader, Dual_RNN,  optimizer, scheduler, opt):
@@ -61,9 +62,10 @@ class Trainer(object):
         return total_loss
 
 
-class MyTrainer:
+class Trainer:
     def __init__(self, num_epochs = 100, device='cuda', best_weights = False, checkpointing = False, 
-                 checkpoint_interval = 10, model_name = '', path_to_weights= './weights', ckpt_folder = '') -> None:
+                 checkpoint_interval = 10, model_name = '', path_to_weights= './weights', ckpt_folder = '',
+                 speaker_num = 2, resume = False) -> None:
         self.num_epochs = num_epochs
         self.device = device
         self.best_weights = best_weights
@@ -73,12 +75,14 @@ class MyTrainer:
         os.makedirs(path_to_weights, exist_ok=True)
         self.path_to_weights = path_to_weights
         self.ckpt_folder = ckpt_folder
+        self.speaker_num = speaker_num
+        self.resume = resume
 
     @measure_time
-    def fit(self, model, dataloaders, criterion, optimizer, metrics, writer) -> None:
+    def fit(self, model, dataloaders, criterion, optimizer, writer) -> None:
         model.to(self.device)
-        min_acc = 0.0
         for epoch in range(self.num_epochs):
+            print('Epoch:', epoch)
             for phase in ['train', 'valid']:
                 if phase == 'train':
                     model.train()
@@ -88,32 +92,23 @@ class MyTrainer:
                     dataloader = dataloaders['valid']
                 
                 running_loss = 0.0
-                for m in metrics.keys():
-                    metrics[m].reset()
                 total_samples = len(dataloader.dataset)
                 
-                for inputs, labels in dataloader:
-                    inputs, labels = inputs.to(self.device), labels.to(self.device)
+                for mixed, ref in dataloader:
+                    inputs = mixed.to(self.device)
+                    labels = [ref[i].to(self.device) for i in range(self.num_spks)]
                     with torch.set_grad_enabled(phase == 'train'):
-                        outputs = model(inputs).transpose(1, 2)
+                        outputs = model(inputs)
                         loss = criterion(outputs, labels)
                         if phase == 'train':
                             optimizer.zero_grad()
                             loss.backward()
                             optimizer.step()
                     running_loss += loss.item() * inputs.size(0)
-                    for m in metrics.keys():
-                        metrics[m].update(outputs, labels)
-                
+                    
                 epoch_loss = running_loss / total_samples
-                epoch_metrics = {m: metrics[m].compute().item() for m in metrics.keys()}
                 
-                torch_logger (writer, phase, epoch, epoch_loss, epoch_metrics, metrics)
-                p_output_log(epoch, self.num_epochs, phase, epoch_loss, epoch_metrics, metrics)
-
-                if phase == 'valid' and self.best_weights and epoch_metrics['Accuracy'] > min_acc:
-                    min_acc = epoch_metrics['Accuracy']
-                    save_best_weight(model, optimizer, epoch, epoch_loss, epoch_metrics, self.path_to_weights, self.model_name)
-
-            if self.checkpointing and (epoch + 1) % self.checkpoint_interval == 0:
-                save_checkpoint(model, optimizer, epoch, epoch_loss, epoch_metrics, self.ckpt_folder, self.model_name)
+                if phase == 'valid':
+                    print('valid:', epoch_loss)
+                else:
+                    print('train', epoch_loss)
