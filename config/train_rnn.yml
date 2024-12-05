@@ -5,16 +5,16 @@ xp_config:
   speaker_num: 2
 
 data:
-  data_mixed: ./mixed_data/
-  data_targets: ./targets/
-  train_percent: 0.8
-  valid_percent: 0.1
-  test_percent: 0.1
+  mix_dir: ./mixed_data/
+  ref_dirs: ./targets/
+  train_split: 0.8
+  val_split: 0.1
   num_workers: 1  
   batch_size: 1
   sample_rate: 16000
   chunk_size: 32000
   least_size: 16000
+  seed: 42
   
 model:
   in_channels: 256
