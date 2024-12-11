@@ -5,16 +5,17 @@ xp_config:
   speaker_num: 2
 
 data:
-  mix_dir: ./mixed_data/
-  ref_dirs: ./targets/
-  train_split: 0.8
-  val_split: 0.1
+  data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_k_2.csv
+  csv_file: True
+  train_percent: 0.8
+  valid_percent: 0.1
+  test_percent: 0.1
   num_workers: 1  
-  batch_size: 1
+  batch_size: 256
+  seed: 42
   sample_rate: 16000
   chunk_size: 32000
   least_size: 16000
-  seed: 42
   
 model:
   in_channels: 256

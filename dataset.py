@@ -12,6 +12,8 @@ import torch.nn.functional as F
 import pandas as pd
 import numpy as np
 
+from utils.measure_time import measure_time 
+
 EPS = 1e-8
 
 class AudioDataset(th.utils.data.Dataset):
@@ -91,29 +93,36 @@ class AudioDataModule(pl.LightningDataModule):
         self.train_len = int(len(self.mix_paths) * train_percent)
         self.valid_len = int(len(self.mix_paths) * valid_percent)
         self.test_len = int(len(self.mix_paths) * test_percent)
-    
-    def setup(self, stage: Optional[str] = None, info = True):
-        self.train_dataset = AudioDataset(self.mix_paths[:self.train_len], 
-                                          self.ref_paths[:self.train_len], 
-                                          sr = self.sr, 
-                                          chunk_size = self.chunk_size, 
-                                          least_size = self.least_size)
-        if info: print(f"Size of training set: {len(self.train_dataset)}")
+
+    @measure_time
+    def setup(self, stage = 'train'):
+        assert stage in ['train', 'eval'], "Invalid stage"
+        
+        if stage == 'train': 
+            self.train_dataset = AudioDataset(self.mix_paths[:self.train_len], 
+                                              self.ref_paths[:self.train_len], 
+                                              sr = self.sr, 
+                                              chunk_size = self.chunk_size, 
+                                              least_size = self.least_size)
+            print(f"Size of training set: {len(self.train_dataset)}")
             
-        self.val_dataset = AudioDataset(self.val_paths[self.train_len:self.train_len + self.valid_len], 
-                                        self.ref_paths[self.train_len:self.train_len + self.valid_len], 
-                                        sr = self.sr, 
-                                        chunk_size = self.chunk_size, 
-                                        least_size = self.least_size)
-        if info: print(f"Size of validation set: {len(self.val_dataset)}")
-            
-        self.test_dataset = AudioDataset(self.test_paths[self.train_len + self.valid_len:], 
-                                         self.ref_paths[self.train_len + self.valid_len:], 
-                                         sr = self.sr, 
-                                         chunk_size = self.chunk_size, 
-                                         least_size = self.least_size)
-        if info: print(f"Size of test set: {len(self.test_dataset)}")
-    
+            self.val_dataset = AudioDataset(self.val_paths[self.train_len:self.train_len + self.valid_len], 
+                                            self.ref_paths[self.train_len:self.train_len + self.valid_len], 
+                                            sr = self.sr, 
+                                            chunk_size = self.chunk_size, 
+                                            least_size = self.least_size) 
+            print(f"Size of validation set: {len(self.val_dataset)}")
+
+        if stage == 'eval':
+            self.test_dataset = AudioDataset(self.test_paths[self.train_len + self.valid_len:], 
+                                             self.ref_paths[self.train_len + self.valid_len:], 
+                                             sr = self.sr, 
+                                             chunk_size = self.chunk_size, 
+                                             least_size = self.least_size)
+            print(f"Size of test set: {len(self.test_dataset)}")
+
+        return self
+        
     def train_dataloader(self):
         return th.utils.data.DataLoader(self.train_dataset, 
                                         batch_size=self.batch_size, 
@@ -151,3 +160,11 @@ class AudioDataModule(pl.LightningDataModule):
         worker_seed = th.initial_seed() % 2**32
         np.random.seed(worker_seed)
         random.seed(worker_seed)
+
+
+# if __name__ == '__main__':
+#     from utils.load_config import load_config 
+#     cfg, ckpt_folder = load_config('./config/train_rnn.yml')
+#     cfg['data']
+#     datamodule = AudioDataModule(**cfg['data']).setup(stage = 'train')
+#     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
