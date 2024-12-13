@@ -6,9 +6,8 @@ from torch import nn
 import torch
 from utils.funtctional import check_parameters
 
-import warnings
-
-warnings.filterwarnings('ignore')
+# import warnings
+# warnings.filterwarnings('ignore')
 
 class GlobalLayerNorm(nn.Module):
     '''
