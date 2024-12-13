@@ -2,7 +2,7 @@ import os
 import random
 import math
 from glob import glob
-from typing import Optional, List
+from typing import List
 from tqdm import tqdm 
 
 import torch as th
@@ -17,11 +17,20 @@ from utils.measure_time import measure_time
 EPS = 1e-8
 
 class AudioDataset(th.utils.data.Dataset):
-    def __init__(self, mix_paths: List[str], ref_paths: List[List[str]], 
+    
+    def __init__(self, mix_file_paths: List[str], ref_file_paths: List[List[str]], 
                  sr: int = 8000, chunk_size: int = 32000, least_size: int = 16000):
         super().__init__()
-        self.mix_audio = self._load_audio(mix_paths, sr, chunk_size, least_size)
-        self.ref_audio = [self._load_audio(ref, sr, chunk_size, least_size) for ref in ref_paths]
+        self.mix_audio = []
+        self.ref_audio = []
+        k = len(ref_file_paths[0])
+        for mix_path, ref_paths in zip(mix_file_paths, ref_file_paths):
+            chunked_mix = self._load_audio(mix_path, sr, chunk_size, least_size)
+            if not chunked_mix: continue
+            ref_audio_chunks = [self._load_audio(ref_path, sr, chunk_size, least_size) for ref_path in ref_paths]
+            if k != len(ref_audio_chunks): continue
+            self.mix_audio.append(chunked_mix)
+            self.ref_audio.append(ref_audio_chunks)
 
     def __len__(self):
         return len(self.mix_audio)
@@ -30,36 +39,28 @@ class AudioDataset(th.utils.data.Dataset):
         mix = self.mix_audio[idx]
         refs = [ref[idx] for ref in self.ref_audio]
         return mix, refs
-
+    
     @staticmethod
-    def _load_audio(paths: List[str], sr: int, chunk_size: int, least_size: int):
-        audios = []
-        min_shape = 7210
-        for path in paths:
-            audio, _sr = torchaudio.load(path)
-            if _sr != sr: raise RuntimeError(f"Sample rate mismatch: {_sr} vs {sr}")
-
-            # Pad or chunk the audio
-            if audio.shape[-1] < least_size:
-                min_shape = min(min_shape, audio.shape[-1])
-                continue
-            elif least_size < audio.shape[-1] < chunk_size:
-                pad_size = chunk_size - audio.shape[-1]
-                audios.append(F.pad(audio, (0, pad_size), mode='constant'))
-            else:
-                start = 0
-                while start + chunk_size <= audio.shape[-1]:
-                    audio = audio.squeeze()
-                    audios.append(audio[start:start + chunk_size])
-                    start += least_size
-        if min_shape != 7210: 
-            print(min_shape)
-        return audios
+    def _load_audio(path:str, sr: int, chunk_size: int, least_size: int):
+        audio, _sr = torchaudio.load(path)
+        if _sr != sr: raise RuntimeError(f"Sample rate mismatch: {_sr} vs {sr}")
+        if audio.shape[-1] < least_size: return []
+        audio_chunks = []
+        if least_size < audio.shape[-1] < chunk_size:
+            pad_size = chunk_size - audio.shape[-1]
+            audio_chunks.append(F.pad(audio, (0, pad_size), mode='constant'))
+        else:
+            start = 0
+            while start + chunk_size <= audio.shape[-1]:
+                audio = audio.squeeze() # warning
+                audio_chunks.append(audio[start:start + chunk_size])
+                start += least_size
+        return audio_chunks 
 
 
 class AudioDataModule(pl.LightningDataModule):
-    def __init__(self, data_dir: str, csv_file:bool = False, train_percent: float = 0.8, valid_percent: float = 0.1, 
-                 test_percent: float = 0.1, num_workers: int = 4, batch_size: int = 512, seed: int = 42, 
+    def __init__(self, data_dir: str, csv_file:bool = False, total_percent: float = 0.1, train_percent:float = 0.8, valid_percent:float = 0.1, 
+                 test_percent: float = 0.1, num_workers: int = 4, batch_size: int = 512, pin_memory = False, seed: int = 42, 
                  sample_rate: int = 8000, chunk_size: int = 32000, least_size: int = 16000):
         super().__init__()
         self.batch_size = batch_size
@@ -67,6 +68,7 @@ class AudioDataModule(pl.LightningDataModule):
         self.chunk_size = chunk_size
         self.least_size = least_size
         self.num_workers = num_workers
+        self.pin_memory = pin_memory
         self.seed = seed
         self._set_seed(seed)
         self.g = th.Generator()
@@ -87,7 +89,9 @@ class AudioDataModule(pl.LightningDataModule):
                 mx_df = pd.read_csv(mx.replace('flac', 'csv'))
                 f_real = sorted([mx_df.iloc[0][column] for column in mx_df.columns[1:]])
                 self.ref_paths.append(f_real)
-        
+
+        self.mix_paths = self.mix_paths[:int(len(self.mix_paths) * total_percent)]
+        self.ref_paths = self.ref_paths[:int(len(self.ref_paths) * total_percent)]
         random.shuffle(self.mix_paths)
         assert math.isclose(train_percent + valid_percent + test_percent, 1.0, rel_tol=1e-9), "Sum doesnt equal to 1" 
         self.train_len = int(len(self.mix_paths) * train_percent)
@@ -106,7 +110,7 @@ class AudioDataModule(pl.LightningDataModule):
                                               least_size = self.least_size)
             print(f"Size of training set: {len(self.train_dataset)}")
             
-            self.val_dataset = AudioDataset(self.val_paths[self.train_len:self.train_len + self.valid_len], 
+            self.val_dataset = AudioDataset(self.mix_paths[self.train_len:self.train_len + self.valid_len], 
                                             self.ref_paths[self.train_len:self.train_len + self.valid_len], 
                                             sr = self.sr, 
                                             chunk_size = self.chunk_size, 
@@ -114,7 +118,7 @@ class AudioDataModule(pl.LightningDataModule):
             print(f"Size of validation set: {len(self.val_dataset)}")
 
         if stage == 'eval':
-            self.test_dataset = AudioDataset(self.test_paths[self.train_len + self.valid_len:], 
+            self.test_dataset = AudioDataset(self.mix_paths[self.train_len + self.valid_len:], 
                                              self.ref_paths[self.train_len + self.valid_len:], 
                                              sr = self.sr, 
                                              chunk_size = self.chunk_size, 
@@ -126,7 +130,7 @@ class AudioDataModule(pl.LightningDataModule):
     def train_dataloader(self):
         return th.utils.data.DataLoader(self.train_dataset, 
                                         batch_size=self.batch_size, 
-                                        pin_memory = False,
+                                        pin_memory = self.pin_memory,
                                         shuffle=True, 
                                         num_workers=self.num_workers,
                                         worker_init_fn=self.seed_worker,
@@ -135,7 +139,7 @@ class AudioDataModule(pl.LightningDataModule):
     def val_dataloader(self):
         return th.utils.data.DataLoader(self.val_dataset, 
                                         batch_size=self.batch_size, 
-                                        pin_memory = False,
+                                        pin_memory = self.pin_memory,
                                         shuffle=False, 
                                         num_workers=self.num_workers,
                                         worker_init_fn=self.seed_worker,
@@ -144,7 +148,7 @@ class AudioDataModule(pl.LightningDataModule):
     def test_dataloader(self):
         return th.utils.data.DataLoader(self.test_dataset, 
                                         batch_size=self.batch_size,
-                                        pin_memory = False, 
+                                        pin_memory = self.pin_memory, 
                                         shuffle=False, 
                                         num_workers=self.num_workers, 
                                         worker_init_fn=self.seed_worker,
@@ -164,7 +168,6 @@ class AudioDataModule(pl.LightningDataModule):
 
 # if __name__ == '__main__':
 #     from utils.load_config import load_config 
-#     cfg, ckpt_folder = load_config('./config/train_rnn.yml')
-#     cfg['data']
+#     cfg = load_config('./config/train_rnn.yml')
 #     datamodule = AudioDataModule(**cfg['data']).setup(stage = 'train')
 #     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
