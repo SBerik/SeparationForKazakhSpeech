@@ -7,11 +7,13 @@ xp_config:
 data:
   data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_k_2.csv
   csv_file: True
+  total_percent: 0.1 
   train_percent: 0.8
   valid_percent: 0.1
   test_percent: 0.1
   num_workers: 1  
   batch_size: 256
+  pin_memory: True
   seed: 42
   sample_rate: 16000
   chunk_size: 32000

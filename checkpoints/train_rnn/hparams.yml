@@ -1,0 +1,48 @@
+data:
+  batch_size: 256
+  chunk_size: 32000
+  csv_file: true
+  data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_k_2.csv
+  least_size: 16000
+  num_workers: 1
+  pin_memory: true
+  sample_rate: 16000
+  seed: 42
+  test_percent: 0.1
+  total_percent: 0.1
+  train_percent: 0.8
+  valid_percent: 0.1
+model:
+  K: 250
+  bidirectional: true
+  dropout: 0
+  hidden_channels: 128
+  in_channels: 256
+  kernel_size: 2
+  norm: ln
+  num_layers: 6
+  out_channels: 64
+  rnn_type: LSTM
+  speaker_num: 2
+trainer:
+  best_weights: false
+  checkpoint_interval: 5
+  checkpointing: false
+  ckpt_folder: ./checkpoints/
+  device: cuda
+  model_name: VADNet
+  num_epochs: 100
+  path_to_weights: ./weights
+  resume: false
+  speaker_num: 2
+training:
+  clip_norm: 5
+  lr: 0.01
+  momentum: 0
+  optim: Adam
+  weight_decay: 1.0e-05
+xp_config:
+  dataset: ISSAI_KSC2
+  model_type: Dual_Path_RNN
+  speaker_num: 2
+  use_tb_logger: false
