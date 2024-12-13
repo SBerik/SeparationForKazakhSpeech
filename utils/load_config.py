@@ -8,4 +8,5 @@ def load_config (hparams_file):
     os.makedirs(ckpt_folder, exist_ok=True)
     with open(os.path.join(ckpt_folder, 'hparams.yml'), 'w') as file:
         yaml.dump(cfg, file)
-    return cfg, ckpt_folder
+    cfg['trainer']['ckpt_folder'] = ckpt_folder
+    return cfg
