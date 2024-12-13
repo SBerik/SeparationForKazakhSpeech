@@ -37,7 +37,8 @@ class AudioDataset(th.utils.data.Dataset):
 
     def __getitem__(self, idx):
         mix = self.mix_audio[idx]
-        refs = [ref[idx] for ref in self.ref_audio]
+        refs = self.mix_audio[idx]
+        # refs = [ref[idx] for ref in self.ref_audio]
         return mix, refs
     
     @staticmethod

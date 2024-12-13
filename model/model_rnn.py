@@ -4,10 +4,16 @@ sys.path.append('../')
 import torch.nn.functional as F
 from torch import nn
 import torch
-from utils.funtctional import check_parameters
 
-# import warnings
-# warnings.filterwarnings('ignore')
+def check_parameters(net):
+    '''
+        Returns module parameters. Mb
+    '''
+    parameters = sum(param.numel() for param in net.parameters())
+    return parameters / 10**6
+
+import warnings
+warnings.filterwarnings('ignore')
 
 class GlobalLayerNorm(nn.Module):
     '''

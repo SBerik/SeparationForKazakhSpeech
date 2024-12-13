@@ -3,7 +3,14 @@ from torch import nn
 import torch.nn.functional as F
 import sys
 sys.path.append('../')
-from utils.funtctional import check_parameters
+
+def check_parameters(net):
+    '''
+        Returns module parameters. Mb
+    '''
+    parameters = sum(param.numel() for param in net.parameters())
+    return parameters / 10**6
+
 
 class GlobalLayerNorm(nn.Module):
     '''

@@ -1,15 +1,15 @@
 data:
-  batch_size: 256
+  batch_size: 1
   chunk_size: 32000
   csv_file: true
   data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_k_2.csv
   least_size: 16000
-  num_workers: 1
+  num_workers: 6
   pin_memory: true
   sample_rate: 16000
   seed: 42
   test_percent: 0.1
-  total_percent: 0.1
+  total_percent: 0.0005
   train_percent: 0.8
   valid_percent: 0.1
 model:
@@ -30,7 +30,7 @@ trainer:
   checkpointing: false
   ckpt_folder: ./checkpoints/
   device: cuda
-  model_name: VADNet
+  model_name: Dual_Path_RNN
   num_epochs: 100
   path_to_weights: ./weights
   resume: false
