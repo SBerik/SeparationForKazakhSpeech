@@ -15,6 +15,6 @@ def measure_time(func):
         result = func(*args, **kwargs)
         end_time = t.time()
         elapsed_time = end_time - start_time
-        print(f"Elapsed time {func.__name__}: {format_time(elapsed_time)}")
+        print(f"Elapsed time '{func.__name__}': {format_time(elapsed_time)}")
         return result
     return wrapper
