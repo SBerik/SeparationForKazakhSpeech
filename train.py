@@ -9,7 +9,7 @@ from utils.load_config import load_config
 from utils.training import metadata_info, configure_optimizer
 from model.model_rnn import Dual_RNN_model
 from losses import loss
-from dataset import AudioDataModule
+from data import AudioDataModule
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
