@@ -14,7 +14,6 @@ import numpy as np
 
 from utils.measure_time import measure_time 
 
-EPS = 1e-8
 
 class AudioDataset(th.utils.data.Dataset):
     
