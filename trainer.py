@@ -4,7 +4,6 @@ import torch
 from utils.measure_time import measure_time
 from utils.training import * 
 from utils.checkpointer import Checkpointer
-from losses import loss as Loss
 
 class Trainer:
     def __init__(self, num_epochs = 100, device='cuda', best_weights = False, checkpointing = False, 
@@ -41,7 +40,7 @@ class Trainer:
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
                     with torch.set_grad_enabled(phase == 'train'):
                         outputs = model(inputs).transpose(1, 2)
-                        loss = Loss(outputs, labels)
+                        loss = criterion(outputs, labels)
                         if phase == 'train':
                             optimizer.zero_grad()
                             loss.backward()

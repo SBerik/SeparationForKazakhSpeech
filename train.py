@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter as TensorBoard
 from utils.load_config import load_config 
 from utils.training import metadata_info, configure_optimizer
 from models.model_rnn import Dual_RNN_model
-from losses import loss
+from losses import Loss
 from data import AudioDataModule
 
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -30,7 +30,7 @@ def main(hparams_file):
     # Optimizer
     optimizer = configure_optimizer (cfg, model)
     # Train
-    Trainer(**cfg['trainer']).fit(model, dataloaders, loss, optimizer, writer)
+    Trainer(**cfg['trainer']).fit(model, dataloaders, Loss, optimizer, writer)
 
 
 if __name__ == '__main__':

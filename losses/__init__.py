@@ -1,1 +1,1 @@
-from .loss import Loss as loss
+from .loss import Loss
