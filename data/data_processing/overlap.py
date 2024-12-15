@@ -12,7 +12,7 @@ def overlap_using_min(audios, sr=16000):
     min_length = min(len(audio) for audio in loaded_audios)
     trimmed_audios = [audio[:min_length] for audio in loaded_audios]
     overlay = np.sum(trimmed_audios, axis=0)
-    return overlay
+    return overlay, min_length
 
 
 def overlap(audio_1: str, audio_2: str, sr=16000):    
