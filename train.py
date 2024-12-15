@@ -35,6 +35,6 @@ def main(hparams_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--hparams", type=str, default="./config/train_rnn.yml", help="hparams config file")
+    parser.add_argument("-p", "--hparams", type=str, default="./configs/train_rnn.yml", help="hparams config file")
     args = parser.parse_args()
     main(args.hparams)

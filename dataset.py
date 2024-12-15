@@ -169,6 +169,6 @@ class AudioDataModule(pl.LightningDataModule):
 
 # if __name__ == '__main__':
 #     from utils.load_config import load_config 
-#     cfg = load_config('./config/train_rnn.yml')
+#     cfg = load_config('./configs/train_rnn.yml')
 #     datamodule = AudioDataModule(**cfg['data']).setup(stage = 'train')
 #     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
