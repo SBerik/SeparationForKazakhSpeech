@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter as TensorBoard
 
 from utils.load_config import load_config 
 from utils.training import metadata_info, configure_optimizer
-from model.model_rnn import Dual_RNN_model
+from models.model_rnn import Dual_RNN_model
 from losses import loss
 from data import AudioDataModule
 
