@@ -34,14 +34,14 @@ class AudioDataModule(pl.LightningDataModule):
             full_df = pd.read_csv(data_dir)
             for _, row in full_df.iterrows():
                 self.mix_paths.append (row.iloc[0])
-                self.ref_paths.append(sorted([row[column] for column in full_df.columns[1:]]))
-        else:
+                self.ref_paths.append([row.iloc[1], sorted([row[column] for column in full_df.columns[2:]])])
+        else: 
             mixed_list = glob(os.path.join(data_dir, "*.flac"))
             for mx in tqdm(mixed_list):
                 mx = mx.replace('\\', '/')
                 self.mix_paths.append (mx)
                 mx_df = pd.read_csv(mx.replace('flac', 'csv'))
-                f_real = sorted([mx_df.iloc[0][column] for column in mx_df.columns[1:]])
+                f_real = [mx_df.iloc[0], sorted([mx_df.iloc[0][column] for column in mx_df.columns[2:]])] # THERE IS BAG need to fixed 
                 self.ref_paths.append(f_real)
 
         self.mix_paths = self.mix_paths[:int(len(self.mix_paths) * total_percent)]
@@ -70,7 +70,7 @@ class AudioDataModule(pl.LightningDataModule):
                                             chunk_size = self.chunk_size, 
                                             least_size = self.least_size) 
             print(f"Size of validation set: {len(self.val_dataset)}")
-
+            
         if stage == 'eval':
             self.test_dataset = AudioDataset(self.mix_paths[self.train_len + self.valid_len:], 
                                              self.ref_paths[self.train_len + self.valid_len:], 
@@ -79,7 +79,6 @@ class AudioDataModule(pl.LightningDataModule):
                                              least_size = self.least_size)
             print(f"Size of test set: {len(self.test_dataset)}")
 
-        return self
         
     def train_dataloader(self):
         return th.utils.data.DataLoader(self.train_dataset, 
@@ -98,7 +97,7 @@ class AudioDataModule(pl.LightningDataModule):
                                         num_workers=self.num_workers,
                                         worker_init_fn=self.seed_worker,
                                         generator=self.g)
-
+    
     def test_dataloader(self):
         return th.utils.data.DataLoader(self.test_dataset, 
                                         batch_size=self.batch_size,

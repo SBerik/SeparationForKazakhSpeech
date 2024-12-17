@@ -5,13 +5,13 @@ xp_config:
   speaker_num: 2
 
 data:
-  data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_k_2.csv
+  data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_tts=2000_k_2.csv
   csv_file: True
-  total_percent: 0.0005 
+  total_percent: 1.0 
   train_percent: 0.8
   valid_percent: 0.1
   test_percent: 0.1
-  num_workers: 6  
+  num_workers: 0 # crussial for window-users  
   batch_size: 1
   pin_memory: True
   seed: 42
