@@ -2,14 +2,14 @@ data:
   batch_size: 1
   chunk_size: 32000
   csv_file: true
-  data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_k_2.csv
+  data_dir: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_tts=2000_k_2.csv
   least_size: 16000
-  num_workers: 6
+  num_workers: 0
   pin_memory: true
   sample_rate: 16000
   seed: 42
   test_percent: 0.1
-  total_percent: 0.0005
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
 model:
