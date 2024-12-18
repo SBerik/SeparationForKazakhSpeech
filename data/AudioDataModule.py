@@ -10,7 +10,7 @@ import torch as th
 import pytorch_lightning as pl
 
 from utils.measure_time import measure_time
-from dataset import AudioDataset
+from AudioDataset import AudioDataset
 
 class AudioDataModule(pl.LightningDataModule):
     def __init__(self, data_dir: str, csv_file:bool = False, total_percent: float = 0.1, train_percent:float = 0.8, valid_percent:float = 0.1, 
@@ -79,6 +79,7 @@ class AudioDataModule(pl.LightningDataModule):
                                              least_size = self.least_size)
             print(f"Size of test set: {len(self.test_dataset)}")
 
+        return self # warning
         
     def train_dataloader(self):
         return th.utils.data.DataLoader(self.train_dataset, 
