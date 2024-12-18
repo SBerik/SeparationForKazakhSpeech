@@ -17,12 +17,10 @@ class Datasets(Dataset):
        least_size (int, optional): Minimum split size (default: 16000(2 s))
     '''
 
-    def __init__(self, mix_scp=None, ref_scp=None, sample_rate=8000, chunk_size=32000, least_size=16000):
+    def __init__(self, mix_scp=None, ref_scp=None, sample_rate=16000, chunk_size=32000, least_size=16000):
         super(Datasets, self).__init__()
-        self.mix_audio = AudioReader(
-            mix_scp, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio
-        self.ref_audio = [AudioReader(
-            r, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio for r in ref_scp]
+        self.mix_audio = AudioReader(mix_scp, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio
+        self.ref_audio = [AudioReader(r, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio for r in ref_scp]
 
     def __len__(self):
         return len(self.mix_audio)

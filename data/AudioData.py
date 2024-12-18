@@ -80,6 +80,7 @@ class AudioReader(object):
         self.sample_rate = sample_rate
         self.index_dict = handle_scp(scp_path)
         self.keys = list(self.index_dict.keys())
+        print(self.keys[0])
         self.audio = []
         self.chunk_size = chunk_size
         self.least_size = least_size
@@ -104,9 +105,20 @@ class AudioReader(object):
                     self.audio.append(utt[start:start+self.chunk_size])
                     start += self.least_size
 
+    def get_num_after_splitting(self):
+        print(len(self.audio))
 
 
 if __name__ == "__main__":
-    a = AudioReader("/home/likai/data1/create_scp/cv_mix.scp")
+    a = AudioReader('F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_mix.scp', 
+                    sample_rate=16000, 
+                    chunk_size=32000, 
+                    least_size=16000)
+    
+    ref_scp = ['F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s1.scp', 
+               'F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s2.scp']
+    
+    b = [AudioReader(r, sample_rate=16000, chunk_size=32000, least_size=16000).audio for r in ref_scp]
+    
     audio = a.audio
     print(len(audio))
