@@ -33,9 +33,7 @@ def Loss(ests, egs):
 
     def sisnr_loss(permute):
         # for one permute
-        return sum(
-            [sisnr(ests[s], refs[t])
-             for s, t in enumerate(permute)]) / len(permute)
+        return sum([sisnr(ests[s], refs[t]) for s, t in enumerate(permute)]) / len(permute)
              # average the value
 
     # P x N
