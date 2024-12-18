@@ -43,3 +43,45 @@ def Loss(ests, egs):
     max_perutt, _ = torch.max(sisnr_mat, dim=0)
     # si-snr
     return -torch.sum(max_perutt) / N
+
+
+# % Formula for Scale-Invariant Signal-to-Noise Ratio (SI-SNR)
+
+# \documentclass{article}
+# \usepackage{amsmath}
+# \usepackage{amssymb}
+
+# \begin{document}
+
+# \section*{Scale-Invariant Signal-to-Noise Ratio (SI-SNR)}
+
+# The Scale-Invariant Signal-to-Noise Ratio (SI-SNR) is computed as:
+
+# \[
+# \text{SI-SNR}(x, s) = 20 \cdot \log_{10}\left(\epsilon + \frac{\|t\|_2}{\|x_{\text{zm}} - t\|_2 + \epsilon}\right)
+# \]
+
+# where:
+# \begin{align*}
+# x_{\text{zm}} &= x - \frac{1}{S} \sum x, \quad \text{(Zero-mean of separated signal)} \\
+# s_{\text{zm}} &= s - \frac{1}{S} \sum s, \quad \text{(Zero-mean of reference signal)} \\
+# t &= \frac{\sum(x_{\text{zm}} \cdot s_{\text{zm}})}{\|s_{\text{zm}}\|_2^2 + \epsilon} \cdot s_{\text{zm}}, \quad \text{(Projection of $x_{\text{zm}}$ onto $s_{\text{zm}}$)} \\
+# \| \cdot \|_2 &= \text{L}_2\text{-norm}, \\
+# \epsilon &= \text{A small constant to prevent division by zero.}
+# \end{align*}
+
+# \section*{Loss Function}
+
+# For multiple speakers, the loss function is defined as the negative average of the maximum SI-SNR across all permutations of speaker assignments:
+
+# \[
+# \text{Loss} = -\frac{1}{N} \sum_{n=1}^N \max_{\pi \in \mathcal{P}} \frac{1}{|\pi|} \sum_{(s, t) \in \pi} \text{SI-SNR}(x_s, s_t)
+# \]
+
+# where:
+# \begin{itemize}
+#     \item $\mathcal{P}$: Set of all permutations of speaker indices.
+#     \item $N$: Number of samples.
+# \end{itemize}
+
+# \end{document}
