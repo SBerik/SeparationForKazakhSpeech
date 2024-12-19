@@ -38,6 +38,7 @@ trainer:
   checkpointing: True
   checkpoint_interval: 5
   model_name: Dual_Path_RNN
+  trained: ''
   path_to_weights: './weights'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
