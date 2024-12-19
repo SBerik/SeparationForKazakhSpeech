@@ -25,9 +25,9 @@ model:
   rnn_type: LSTM
   speaker_num: 2
 trainer:
-  best_weights: false
+  best_weights: true
   checkpoint_interval: 5
-  checkpointing: false
+  checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
   model_name: Dual_Path_RNN

@@ -34,8 +34,8 @@ model:
 trainer:
   num_epochs: 100
   device: 'cuda'
-  best_weights: False
-  checkpointing: false
+  best_weights: True
+  checkpointing: True
   checkpoint_interval: 5
   model_name: Dual_Path_RNN
   path_to_weights: './weights'
