@@ -62,7 +62,7 @@ class DiarizationDataset:
                                     generator=self.g)
         
     def val_dataloader(self):
-        return th.utils.data.DataLoader(self.train_dataset,
+        return th.utils.data.DataLoader(self.val_dataset,
                                     batch_size = self.batch_size,
                                     pin_memory = self.pin_memory,
                                     shuffle = False,
