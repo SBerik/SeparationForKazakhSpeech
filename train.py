@@ -10,8 +10,8 @@ from losses import Loss
 
 from utils.load_config import load_config 
 from utils.training import metadata_info, configure_optimizer, p_output_log
-from utils.measure_time import measure_time
 from models.model_rnn import Dual_RNN_model
+from trainer import Trainer
 from data.DiarizationDataset import DiarizationDataset
 
 torch.cuda.empty_cache()
