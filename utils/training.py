@@ -19,10 +19,13 @@ def torch_logger (writer, epoch, epoch_state):
         }, epoch)
 
 
-def p_output_log(num_epochs, epoch, phase, epoch_loss):
+def p_output_log(num_epochs, epoch, phase, epoch_state):
     if phase == 'train':
         print(f'Epoch {epoch+1}/{num_epochs}')
-    print(f"{phase.upper()}, Loss: {epoch_loss:.4f}, ", end="")
+    print(f"{phase.upper()}, Loss: {epoch_state[phase]['loss']:.4f}", end="")
+    if epoch_state.metrics:
+        for m in epoch_state['metrics_name']:
+            print(f"{m}: {epoch_state[phase]['metrics'][m]:.4f} ", end="")
     print() 
     if phase == 'valid':
         print('-' * 108, '\n')
@@ -71,7 +74,7 @@ class EpochState(dict):
     def __init__(self, metrics = None):
         super().__init__()
         self.metrics = metrics
-        if not metrics:
+        if metrics:
             self['metrics_name'] = list(metrics.keys())
             for phase in ['train', 'valid']: 
                 self[phase] = {'loss': float('inf'), 'metrics': {m: 0.0 for m in self['metrics_name']}}
@@ -79,12 +82,10 @@ class EpochState(dict):
             for phase in ['train', 'valid']: 
                 self[phase] = {'loss': float('inf')}
                 
-    def update_state(self, loss, phase: str, metrics_val:dict):
+    def update_state(self, loss, phase: str, metrics_val:dict = {}):
         if self.metrics:
-            self[phase]['loss'] = loss
             self[phase]['metrics'] = metrics_val
-        else:
-            self[phase]['loss'] = loss
+        self[phase]['loss'] = loss
 
 # def torch_logger(writer, epoch, train_loss, val_loss, train_accuracy, val_accuracy):
 #     # Объединяем train и valid для Loss
