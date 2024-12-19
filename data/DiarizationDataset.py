@@ -7,7 +7,7 @@ import math
 import pandas as pd
 
 class DiarizationDataset:
-    def __init__(self, data_root = './', train_percent = 0.75, valid_percent = 0.15, test_percent = 0.0, 
+    def __init__(self, data_root = './', total_percent = 1.0, train_percent = 0.75, valid_percent = 0.15, test_percent = 0.0, 
                  shuffle=False, num_workers=0, batch_size=1, pin_memory = False, 
                  sample_rate=8000, chunk_size=32000, least_size=16000, seed = 42):
         self.shuffle = shuffle
@@ -23,6 +23,8 @@ class DiarizationDataset:
         self.g.manual_seed(seed)
         full_data_df = pd.read_csv(data_root) 
         assert math.isclose(train_percent + valid_percent + test_percent, 1.0, rel_tol=1e-9), "Sum doesnt equal to 1" 
+        total_size = int(total_percent * len(full_data_df))
+        full_data_df = full_data_df.iloc[:total_size]
         train_size = int(train_percent * len(full_data_df)) 
         val_size = int(valid_percent * len(full_data_df)) 
         test_size = len(full_data_df) - train_size - val_size
