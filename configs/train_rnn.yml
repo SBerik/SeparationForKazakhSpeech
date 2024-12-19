@@ -4,6 +4,20 @@ xp_config:
   use_tb_logger: false
   speaker_num: 2
 
+data:
+  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_tts=2000_k_2.csv'
+  train_percent: 0.8
+  valid_percent: 0.2
+  test_percent: 0.0
+  shuffle: true
+  num_workers: 0 
+  batch_size: 1
+  pin_memory: True
+  sample_rate: 16000
+  chunk_size: 32000
+  least_size: 16000
+  seed: 42
+
 datasets:
   train_dataroot_mix: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_mix.scp
   train_dataroot_target_s1: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s1.scp 
