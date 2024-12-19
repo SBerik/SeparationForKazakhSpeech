@@ -80,7 +80,6 @@ class AudioReader(object):
         self.sample_rate = sample_rate
         self.index_dict = handle_scp(scp_path)
         self.keys = list(self.index_dict.keys())
-        print(self.keys[0])
         self.audio = []
         self.chunk_size = chunk_size
         self.least_size = least_size
