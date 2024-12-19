@@ -18,22 +18,6 @@ data:
   least_size: 16000
   seed: 42
 
-datasets:
-  train_dataroot_mix: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_mix.scp
-  train_dataroot_target_s1: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s1.scp 
-  train_dataroot_target_s2: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s2.scp
-  val_dataroot_mix: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/cv_mix.scp
-  val_dataroot_target_s1: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/cv_s1.scp 
-  val_dataroot_target_s2: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/cv_s2.scp
-  shuffle: true
-  num_workers: 0 
-  batch_size: 1
-  pin_memory: True
-  sample_rate: 16000
-  chunk_size: 32000
-  least_size: 16000
-  seed: 42
-
 model:
   in_channels: 256
   out_channels: 64 
