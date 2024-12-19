@@ -68,15 +68,23 @@ class EpochState(dict):
                     'rc':
         }
     '''
-    def __init__(self, metrics):
+    def __init__(self, metrics = None):
         super().__init__()
-        self['metrics_name'] = list(metrics.keys())
-        for phase in ['train', 'valid']: 
-            self[phase] = {'loss': float('inf'), 'metrics': {m: 0.0 for m in self['metrics_name']}}
-
+        self.metrics = metrics
+        if not metrics:
+            self['metrics_name'] = list(metrics.keys())
+            for phase in ['train', 'valid']: 
+                self[phase] = {'loss': float('inf'), 'metrics': {m: 0.0 for m in self['metrics_name']}}
+        else:
+            for phase in ['train', 'valid']: 
+                self[phase] = {'loss': float('inf')}
+                
     def update_state(self, loss, phase: str, metrics_val:dict):
-        self[phase]['loss'] = loss
-        self[phase]['metrics'] = metrics_val
+        if self.metrics:
+            self[phase]['loss'] = loss
+            self[phase]['metrics'] = metrics_val
+        else:
+            self[phase]['loss'] = loss
 
 # def torch_logger(writer, epoch, train_loss, val_loss, train_accuracy, val_accuracy):
 #     # Объединяем train и valid для Loss
