@@ -18,9 +18,6 @@ class DiarizationDataset:
         self.chunk_size = chunk_size
         self.least_size = least_size
         self.seed = seed
-        self._set_seed(seed)
-        self.g = th.Generator()
-        self.g.manual_seed(seed)
         full_data_df = pd.read_csv(data_root) 
         assert math.isclose(train_percent + valid_percent + test_percent, 1.0, rel_tol=1e-9), "Sum doesnt equal to 1" 
         total_size = int(total_percent * len(full_data_df))
@@ -31,6 +28,9 @@ class DiarizationDataset:
         self.train_df = full_data_df.iloc[:train_size] 
         self.val_df = full_data_df.iloc[train_size:train_size + val_size] 
         self.test_df = full_data_df.iloc[train_size + val_size:]
+        self._set_seed(seed)
+        self.g = th.Generator()
+        self.g.manual_seed(seed)
         
     @measure_time
     def setup(self, stage = 'train'):
