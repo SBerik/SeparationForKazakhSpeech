@@ -9,5 +9,6 @@ checkpoints/
 
 weights/
 
+Parallel_runs.ipynb
 
 data_processing/parallel_runs.ipynb
