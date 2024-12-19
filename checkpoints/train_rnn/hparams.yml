@@ -1,5 +1,5 @@
 data:
-  batch_size: 1
+  batch_size: 3
   chunk_size: 32000
   data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_tts=2000_k_2.csv
   least_size: 16000
@@ -9,23 +9,9 @@ data:
   seed: 42
   shuffle: true
   test_percent: 0.0
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.2
-datasets:
-  batch_size: 1
-  chunk_size: 32000
-  least_size: 16000
-  num_workers: 0
-  pin_memory: true
-  sample_rate: 16000
-  seed: 42
-  shuffle: true
-  train_dataroot_mix: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_mix.scp
-  train_dataroot_target_s1: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s1.scp
-  train_dataroot_target_s2: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s2.scp
-  val_dataroot_mix: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/cv_mix.scp
-  val_dataroot_target_s1: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/cv_s1.scp
-  val_dataroot_target_s2: F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/cv_s2.scp
 model:
   K: 250
   bidirectional: true

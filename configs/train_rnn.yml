@@ -6,12 +6,13 @@ xp_config:
 
 data:
   data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_tts=2000_k_2.csv'
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.2
   test_percent: 0.0
   shuffle: true
   num_workers: 0 
-  batch_size: 1
+  batch_size: 3
   pin_memory: True
   sample_rate: 16000
   chunk_size: 32000
