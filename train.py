@@ -1,16 +1,20 @@
-import torch
-import torchmetrics
-from trainer import Trainer 
+import os
 import argparse
 from pathlib import Path
+
+import torch
+import torchmetrics
 from torch.utils.tensorboard import SummaryWriter as TensorBoard
+from tqdm.notebook import tqdm
+from losses import Loss
 
 from utils.load_config import load_config 
-from utils.training import metadata_info, configure_optimizer
+from utils.training import metadata_info, configure_optimizer, p_output_log
+from utils.measure_time import measure_time
 from models.model_rnn import Dual_RNN_model
-from losses import Loss
-from data import AudioDataModule
+from data.DiarizationDataset import DiarizationDataset
 
+torch.cuda.empty_cache()
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 torch.set_float32_matmul_precision('medium')
@@ -19,7 +23,7 @@ def main(hparams_file):
     # Loading config file    
     cfg = load_config(hparams_file)
     # Load data 
-    datamodule = AudioDataModule(**cfg['data']).setup(stage = 'train')
+    datamodule = DiarizationDataset(**cfg['data']).setup(stage = 'train')
     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
     # Load model
     model = Dual_RNN_model(**cfg['model'])
