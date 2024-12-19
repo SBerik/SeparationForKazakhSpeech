@@ -3,12 +3,12 @@ sys.path.append('../')
 
 from data.AudioData import AudioReader
 import torch
-from torch.utils.data import Dataset
+# from torch.utils.data import Dataset
 
 import numpy as np
 
 
-class Datasets(Dataset):
+class Datasets(torch.utils.data.Dataset):
     '''
        Load audio data
        mix_scp: file path of mix audio (type: str)
@@ -19,6 +19,12 @@ class Datasets(Dataset):
 
     def __init__(self, mix_scp=None, ref_scp=None, sample_rate=16000, chunk_size=32000, least_size=16000):
         super(Datasets, self).__init__()
+        '''
+        mix_scp: .scp file 
+        ref_csp: [.scp file, .scp file]
+        .scp file:
+            key = audio_name.flac, value = path_to_audio_name.flac
+        '''
         self.mix_audio = AudioReader(mix_scp, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio
         self.ref_audio = [AudioReader(r, sample_rate=sample_rate, chunk_size=chunk_size, least_size=least_size).audio for r in ref_scp]
 
