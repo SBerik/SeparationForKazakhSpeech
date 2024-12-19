@@ -3,18 +3,13 @@ from utils.measure_time import measure_time
 import torch as th
 import random
 import numpy as np
+import math
+import pandas as pd
 
 class DiarizationDataset:
-    def __init__(self, train_dataroot_mix='./', train_dataroot_target_s1='./', train_dataroot_target_s2='./',
-                 val_dataroot_mix='./', val_dataroot_target_s1='./', val_dataroot_target_s2='./',
-                 shuffle=False, num_workers=0, batch_size=1, pin_memory = False,
+    def __init__(self, data_root = './', train_percent = 0.75, valid_percent = 0.15, test_percent = 0.0, 
+                 shuffle=False, num_workers=0, batch_size=1, pin_memory = False, 
                  sample_rate=8000, chunk_size=32000, least_size=16000, seed = 42):
-        self.train_dataroot_mix = train_dataroot_mix
-        self.train_dataroot_target_s1 = train_dataroot_target_s1
-        self.train_dataroot_target_s2 = train_dataroot_target_s2
-        self.val_dataroot_mix = val_dataroot_mix
-        self.val_dataroot_target_s1 = val_dataroot_target_s1
-        self.val_dataroot_target_s2 = val_dataroot_target_s2
         self.shuffle = shuffle
         self.num_workers = num_workers
         self.batch_size = batch_size
@@ -26,19 +21,26 @@ class DiarizationDataset:
         self._set_seed(seed)
         self.g = th.Generator()
         self.g.manual_seed(seed)
+        full_data_df = pd.read_csv(data_root) 
+        assert math.isclose(train_percent + valid_percent + test_percent, 1.0, rel_tol=1e-9), "Sum doesnt equal to 1" 
+        train_size = int(train_percent * len(full_data_df)) 
+        val_size = int(valid_percent * len(full_data_df)) 
+        test_size = len(full_data_df) - train_size - val_size
+        self.train_df = full_data_df.iloc[:train_size] 
+        self.val_df = full_data_df.iloc[train_size:train_size + val_size] 
+        self.test_df = full_data_df.iloc[train_size + val_size:]
         
     @measure_time
     def setup(self, stage = 'train'):
         assert stage in ['train', 'eval'], "Invalid stage" 
         if stage == 'train': 
-            self.train_dataset = Datasets(self.train_dataroot_mix, 
-                                          [self.train_dataroot_target_s1, self.train_dataroot_target_s2],
-                                            sample_rate = self.sample_rate,
-                                            chunk_size = self.chunk_size,
-                                            least_size = self.least_size)
+            self.train_dataset = Datasets(self.train_df,
+                                        sample_rate = self.sample_rate,
+                                        chunk_size = self.chunk_size,
+                                        least_size = self.least_size)
             print(f"Size of training set: {len(self.train_dataset)}")
-            self.val_dataset = Datasets(self.val_dataroot_mix, 
-                                        [self.val_dataroot_target_s1, self.val_dataroot_target_s2],
+            
+            self.val_dataset = Datasets(self.val_df, 
                                         sample_rate = self.sample_rate,
                                         chunk_size = self.chunk_size,
                                         least_size = self.least_size)
@@ -81,28 +83,28 @@ class DiarizationDataset:
     # def test_dataloader(self):
 
 
-if __name__ == '__main__':
-    import argparse
-    import sys
-    from utils.load_config import load_config  
-    print('start')
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--hparams", type=str, default="./configs/train_rnn.yml", help="hparams config file")
-    args, unknown = parser.parse_known_args()  # Игнорирует нераспознанные аргументы
-    cfg = load_config(args.hparams)
+# if __name__ == '__main__':
+#     import argparse
+#     import sys
+#     from utils.load_config import load_config  
+#     print('start')
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("-p", "--hparams", type=str, default="./configs/train_rnn.yml", help="hparams config file")
+#     args, unknown = parser.parse_known_args()  # Игнорирует нераспознанные аргументы
+#     cfg = load_config(args.hparams)
 
-    datamodule = DiarizationDataset(**cfg['datasets']).setup(stage = 'train')
-    dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
+#     datamodule = DiarizationDataset(**cfg['data']).setup(stage = 'train')
+#     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
 
-    # Получение первого батча данных из DataLoader
-    dataloader = dataloaders['train'] 
-    sample_mix, sample_refs = next(iter(dataloader))  
-    print(sample_mix)
-    print('chunks_num', len(sample_mix))
-    print(sample_mix[0])
-    print(sample_mix[0].shape)
-    print('----------------------------------------------')
-    print('spekears num', len(sample_refs))
-    print('firs_speaker list:', sample_refs[0])
-    print('chunks_nums', len(sample_refs[0]))
-    print(sample_refs[0][0].shape)
+#     # Получение первого батча данных из DataLoader
+#     dataloader = dataloaders['train'] 
+#     sample_mix, sample_refs = next(iter(dataloader))  
+#     print(sample_mix)
+#     print('chunks_num', len(sample_mix))
+#     print(sample_mix[0])
+#     print(sample_mix[0].shape)
+#     print('----------------------------------------------')
+#     print('spekears num', len(sample_refs))
+#     print('firs_speaker list:', sample_refs[0])
+#     print('chunks_nums', len(sample_refs[0]))
+#     print(sample_refs[0][0].shape)

@@ -3,6 +3,25 @@ import torch
 import torchaudio
 import sys
 sys.path.append('../')
+from typing import List, Tuple
+import os.path as ospth
+
+def get_file_name(file_path: str):
+    return ospth.splitext(ospth.basename(file_path))[0]
+
+def handle_df(audios: List[Tuple[int, str]]) -> dict:
+    scp_dict = dict()
+    for audio in audios:
+        common_len, l = audio
+        if len(audio) != 2:
+            raise RuntimeError("Format error in")
+        if len(audio) == 2:
+            key, value = f"{get_file_name (l)}.flac", l
+        if key in scp_dict:
+            raise ValueError("Duplicated key \'{0}\' exists in {1}".format(
+                l, l))
+        scp_dict[key] = {'common_len': common_len, 'name': value}
+    return scp_dict
 
 def handle_scp(scp_path):
     '''
@@ -78,8 +97,9 @@ class AudioReader(object):
     def __init__(self, scp_path, sample_rate=8000, chunk_size=32000, least_size=16000):
         super(AudioReader, self).__init__()
         self.sample_rate = sample_rate
-        self.index_dict = handle_scp(scp_path)
+        self.index_dict = handle_df(scp_path)
         self.keys = list(self.index_dict.keys())
+        # print(self.keys[0])
         self.audio = []
         self.chunk_size = chunk_size
         self.least_size = least_size
@@ -90,7 +110,9 @@ class AudioReader(object):
             split audio with chunk_size and least_size
         '''
         for key in self.keys:
-            utt = read_wav(self.index_dict[key])
+            common_len, name = self.index_dict[key]['common_len'], self.index_dict[key]['name']
+            utt = read_wav(name)
+            utt = utt[:common_len]
             if utt.shape[0] < self.least_size:
                 continue
             if utt.shape[0] > self.least_size and utt.shape[0] < self.chunk_size:
@@ -108,16 +130,16 @@ class AudioReader(object):
         print(len(self.audio))
 
 
-if __name__ == "__main__":
-    a = AudioReader('F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_mix.scp', 
-                    sample_rate=16000, 
-                    chunk_size=32000, 
-                    least_size=16000)
+# if __name__ == "__main__":
+#     a = AudioReader('F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_mix.scp', 
+#                     sample_rate=16000, 
+#                     chunk_size=32000, 
+#                     least_size=16000)
     
-    ref_scp = ['F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s1.scp', 
-               'F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s2.scp']
+#     ref_scp = ['F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s1.scp', 
+#                'F:/ISSAI_KSC2_unpacked/diahard_data/scp_files_k=2/tr_s2.scp']
     
-    b = [AudioReader(r, sample_rate=16000, chunk_size=32000, least_size=16000).audio for r in ref_scp]
+#     b = [AudioReader(r, sample_rate=16000, chunk_size=32000, least_size=16000).audio for r in ref_scp]
     
-    audio = a.audio
-    print(len(audio))
+#     audio = a.audio
+#     print(len(audio))
