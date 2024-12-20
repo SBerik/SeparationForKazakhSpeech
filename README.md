@@ -2,7 +2,8 @@
 
 Before run train and inference, setup vertiual env.
 ```
-mkdir VoiceDetectionForKazakhSpeech
+git clone https://github.com/SBerik/DualPathRNN.git
+cd ./DualPathRNN
 python3 -m venv .venv 
 ```
 For Linux (Ubuntu):
