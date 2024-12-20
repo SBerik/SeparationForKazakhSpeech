@@ -27,7 +27,7 @@ class Trainer:
     @measure_time
     def fit(self, model, dataloaders, criterion, optimizer, writer) -> None:
         model.to(self.device)
-        start_epoch, min_val_loss, model = self.load_pretrained_model(model, optimizer)
+        start_epoch, min_val_loss, model, optimizer = self.load_pretrained_model(model, optimizer)
         epoch_state = EpochState(metrics = None)
         for epoch in range(start_epoch, self.num_epochs):
             for phase in ['train', 'valid']:
@@ -35,8 +35,7 @@ class Trainer:
                 dataloader = dataloaders[phase] 
                 running_loss = 0.0
                 for inputs, labels in dataloader:
-                    inputs = inputs.to(self.device)
-                    labels = [l.to(self.device) for l in labels]
+                    inputs, labels = inputs.to(self.device), [l.to(self.device) for l in labels]
                     with torch.set_grad_enabled(phase == 'train'):
                         outputs = model(inputs)
                         loss = criterion(outputs, labels)
@@ -64,6 +63,6 @@ class Trainer:
             checkpoint = torch.load(self.trained_model, map_location=self.device)
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            return checkpoint['epoch'] + 1, checkpoint['val_loss'] , model
+            return checkpoint['epoch'] + 1, checkpoint['val_loss'] , model, optimizer
         else:
-            return 0, float('inf'), model
+            return 0, float('inf'), model, optimizer
