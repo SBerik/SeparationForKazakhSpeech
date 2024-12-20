@@ -12,11 +12,12 @@ def torch_logger (writer, epoch, epoch_state):
         'Validation': epoch_state['valid']['loss']
     }, epoch)
 
-    for m in epoch_state['metrics_name']:
-        writer.add_scalars(f'{m}', {
-            'Train': epoch_state['train']['metrics'][m], 
-            'Validation': epoch_state['valid']['metrics'][m]
-        }, epoch)
+    if epoch_state.metrics:
+        for m in epoch_state['metrics_name']:
+            writer.add_scalars(f'{m}', {
+                'Train': epoch_state['train']['metrics'][m], 
+                'Validation': epoch_state['valid']['metrics'][m]
+            }, epoch)
 
 
 def p_output_log(num_epochs, epoch, phase, epoch_state):
