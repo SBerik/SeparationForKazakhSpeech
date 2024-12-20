@@ -53,13 +53,14 @@ class Trainer:
                     min_val_loss = epoch_loss
                     self.ckpointer.save_best_weight(model, optimizer, epoch, epoch_state)
             
+            torch_logger(writer, epoch, epoch_state)
+            
             if self.checkpointing and (epoch + 1) % self.checkpoint_interval == 0:
                 self.ckpointer.save_checkpoint(model, optimizer, epoch, epoch_state)
 
-
     def load_pretrained_model(self, model, optimizer):
         if self.trained_model:
-            print(f"Load pretrained mode: {self.trained_model}")
+            print(f"Load pretrained mode: {self.trained_model}", '\n')
             checkpoint = torch.load(self.trained_model, map_location=self.device)
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
