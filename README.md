@@ -26,7 +26,7 @@ Warining: Be careful where you run the script
 
 To run `inference.py`
 ```
-python inference.py PATH_TO_SAMPLE -plot -s -t THRESHOLD -c checkpoints/NAME_OF_YOUR_CONFIG_FILE -w weights/WEIGHT_FILE_NAME
+python inference.py -m PATH_TO_MIXED_SAMPLE -c checkpoints/NAME_OF_YOUR_CONFIG_FILE -w weights/WEIGHT_FILE_NAME -s PATH_TO_SAVE_AUDIOS
 ```
 Warning: run the file `inference.py` with the trained model weights and the config file. 
 
