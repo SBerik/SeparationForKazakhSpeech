@@ -36,16 +36,16 @@ trainer:
   device: 'cuda'
   best_weights: True
   checkpointing: True
-  checkpoint_interval: 5
+  checkpoint_interval: 3
   model_name: Dual_Path_RNN
-  trained: ''
+  trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
   resume: false
 training:
   optim: Adam   ### Adam, RMSprop, SGD
-  lr: !!float 0.01
+  lr: !!float 0.0003
   weight_decay: 1.0e-05
   momentum: 0
   clip_norm: 5

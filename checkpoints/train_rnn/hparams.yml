@@ -26,7 +26,7 @@ model:
   speaker_num: 2
 trainer:
   best_weights: true
-  checkpoint_interval: 5
+  checkpoint_interval: 3
   checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
@@ -35,9 +35,10 @@ trainer:
   path_to_weights: ./weights
   resume: false
   speaker_num: 2
+  trained_model: weights/Dual_Path_RNN_1_-0.1336.pt
 training:
   clip_norm: 5
-  lr: 0.01
+  lr: 0.0003
   momentum: 0
   optim: Adam
   weight_decay: 1.0e-05
