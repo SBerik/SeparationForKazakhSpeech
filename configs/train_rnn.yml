@@ -5,14 +5,14 @@ xp_config:
   speaker_num: 2
 
 data:
-  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_tts=2000_k_2.csv'
+  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_tts_tvnews=5000_k=2.csv'
   total_percent: 1.0
   train_percent: 0.8
-  valid_percent: 0.2
-  test_percent: 0.0
+  valid_percent: 0.1
+  test_percent: 0.1
   shuffle: true
   num_workers: 0 
-  batch_size: 3
+  batch_size: 2
   pin_memory: True
   sample_rate: 16000
   chunk_size: 32000
@@ -38,14 +38,14 @@ trainer:
   checkpointing: True
   checkpoint_interval: 3
   model_name: Dual_Path_RNN
-  trained_model: 'checkpoints/train_rnn/checkpoint_Dual_Path_RNN_epoch_53.pt' # weights/Dual_Path_RNN_1_-0.1336.pt 
+  trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
   resume: false
 training:
   optim: Adam   ### Adam, RMSprop, SGD
-  lr: !!float 0.0003
+  lr: !!float 0.0005
   weight_decay: 1.0e-05
   momentum: 0
   clip_norm: 5

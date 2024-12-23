@@ -1,17 +1,17 @@
 data:
-  batch_size: 3
+  batch_size: 2
   chunk_size: 32000
-  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_tts=2000_k_2.csv
+  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_tts_tvnews=5000_k=2.csv
   least_size: 16000
   num_workers: 0
   pin_memory: true
   sample_rate: 16000
   seed: 42
   shuffle: true
-  test_percent: 0.0
+  test_percent: 0.1
   total_percent: 1.0
   train_percent: 0.8
-  valid_percent: 0.2
+  valid_percent: 0.1
 model:
   K: 250
   bidirectional: true
@@ -35,10 +35,10 @@ trainer:
   path_to_weights: ./weights
   resume: false
   speaker_num: 2
-  trained_model: checkpoints/train_rnn/checkpoint_Dual_Path_RNN_epoch_53.pt
+  trained_model: ''
 training:
   clip_norm: 5
-  lr: 0.0003
+  lr: 0.0005
   momentum: 0
   optim: Adam
   weight_decay: 1.0e-05
