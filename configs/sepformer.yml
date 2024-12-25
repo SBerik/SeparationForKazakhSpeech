@@ -1,5 +1,5 @@
 xp_config:
-  model_type: Dual_Path_RNN
+  model_type: Sepformer
   dataset: ISSAI_KSC2
   use_tb_logger: false
   speaker_num: 2
