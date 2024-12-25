@@ -26,7 +26,7 @@ def sisnr(x, s, eps=1e-8):
     return 20 * torch.log10(eps + l2norm(t) / (l2norm(x_zm - t) + eps))
 
 
-def Loss(ests, egs):
+def SISNR_Loss(ests, egs):
     # spks x n x S
     refs = egs
     num_spks = len(refs)

@@ -3,14 +3,12 @@ import argparse
 from pathlib import Path
 
 import torch
-import torchmetrics
 from torch.utils.tensorboard import SummaryWriter as TensorBoard
-from tqdm.notebook import tqdm
-from losses import Loss
 
+from losses import sisnr_loss, sdr_loss
 from utils.load_config import load_config 
 from utils.training import metadata_info, configure_optimizer, p_output_log
-from models.model_rnn import Dual_RNN_model
+from models import Conv_TasNet, Dual_RNN_model
 from trainer import Trainer
 from data.DiarizationDataset import DiarizationDataset
 
@@ -34,7 +32,7 @@ def main(hparams_file):
     # Optimizer
     optimizer = configure_optimizer (cfg, model)
     # Train
-    Trainer(**cfg['trainer']).fit(model, dataloaders, Loss, optimizer, writer)
+    Trainer(**cfg['trainer']).fit(model, dataloaders, sisnr_loss, optimizer, writer)
 
 
 if __name__ == '__main__':
