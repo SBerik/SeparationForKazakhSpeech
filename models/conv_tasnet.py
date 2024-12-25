@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from modules import Encoder, Decoder
+from .modules import Encoder, Decoder
 
 
 class GlobalLayerNorm(torch.nn.Module):
