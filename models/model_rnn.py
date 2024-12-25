@@ -1,21 +1,10 @@
-import sys
-sys.path.append('../')
-
 import torch.nn.functional as F
-from torch import nn
 import torch
 
-def check_parameters(net):
-    '''
-        Returns module parameters. Mb
-    '''
-    parameters = sum(param.numel() for param in net.parameters())
-    return parameters / 10**6
+from modules import Encoder, Decoder
 
-import warnings
-warnings.filterwarnings('ignore')
 
-class GlobalLayerNorm(nn.Module):
+class GlobalLayerNorm(torch.nn.Module):
     '''
        Calculate Global Layer Normalization
        dim: (int or list or torch.Size) –
@@ -34,11 +23,11 @@ class GlobalLayerNorm(nn.Module):
 
         if self.elementwise_affine:
             if shape == 3:
-                self.weight = nn.Parameter(torch.ones(self.dim, 1))
-                self.bias = nn.Parameter(torch.zeros(self.dim, 1))
+                self.weight = torch.nn.Parameter(torch.ones(self.dim, 1))
+                self.bias = torch.nn.Parameter(torch.zeros(self.dim, 1))
             if shape == 4:
-                self.weight = nn.Parameter(torch.ones(self.dim, 1, 1))
-                self.bias = nn.Parameter(torch.zeros(self.dim, 1, 1))
+                self.weight = torch.nn.Parameter(torch.ones(self.dim, 1, 1))
+                self.bias = torch.nn.Parameter(torch.zeros(self.dim, 1, 1))
         else:
             self.register_parameter('weight', None)
             self.register_parameter('bias', None)
@@ -65,7 +54,7 @@ class GlobalLayerNorm(nn.Module):
         return x
 
 
-class CumulativeLayerNorm(nn.LayerNorm):
+class CumulativeLayerNorm(torch.nn.LayerNorm):
     '''
        Calculate Cumulative Layer Normalization
        dim: you want to norm dim
@@ -100,66 +89,12 @@ def select_norm(norm, dim, shape):
     if norm == 'cln':
         return CumulativeLayerNorm(dim, elementwise_affine=True)
     if norm == 'ln':
-        return nn.GroupNorm(1, dim, eps=1e-8)
+        return torch.nn.GroupNorm(1, dim, eps=1e-8)
     else:
-        return nn.BatchNorm1d(dim)
-
-class Encoder(nn.Module):
-    '''
-       Conv-Tasnet Encoder part
-       kernel_size: the length of filters
-       out_channels: the number of filters
-    '''
-
-    def __init__(self, kernel_size=2, out_channels=64):
-        super(Encoder, self).__init__()
-        self.conv1d = nn.Conv1d(in_channels=1, out_channels=out_channels,
-                                kernel_size=kernel_size, stride=kernel_size//2, groups=1, bias=False)
-
-    def forward(self, x):
-        """
-          Input:
-              x: [B, T], B is batch size, T is times
-          Returns:
-              x: [B, C, T_out]
-              T_out is the number of time steps
-        """
-        # B x T -> B x 1 x T
-        x = torch.unsqueeze(x, dim=1)
-        # B x 1 x T -> B x C x T_out
-        x = self.conv1d(x)
-        x = F.relu(x)
-        return x
+        return torch.nn.BatchNorm1d(dim)
 
 
-class Decoder(nn.ConvTranspose1d):
-    '''
-        Decoder of the TasNet
-        This module can be seen as the gradient of Conv1d with respect to its input. 
-        It is also known as a fractionally-strided convolution 
-        or a deconvolution (although it is not an actual deconvolution operation).
-    '''
-
-    def __init__(self, *args, **kwargs):
-        super(Decoder, self).__init__(*args, **kwargs)
-
-    def forward(self, x):
-        """
-        x: [B, N, L]
-        """
-        if x.dim() not in [2, 3]:
-            raise RuntimeError("{} accept 3/4D tensor as input".format(
-                self.__name__))
-        x = super().forward(x if x.dim() == 3 else torch.unsqueeze(x, 1))
-
-        if torch.squeeze(x).dim() == 1:
-            x = torch.squeeze(x, dim=1)
-        else:
-            x = torch.squeeze(x)
-        return x
-
-
-class Dual_RNN_Block(nn.Module):
+class Dual_RNN_Block(torch.nn.Module):
     '''
        Implementation of the intra-RNN and the inter-RNN
        input:
@@ -178,17 +113,17 @@ class Dual_RNN_Block(nn.Module):
                  dropout=0, bidirectional=False, speaker_num=2):
         super(Dual_RNN_Block, self).__init__()
         # RNN model
-        self.intra_rnn = getattr(nn, rnn_type)(
+        self.intra_rnn = getattr(torch.nn, rnn_type)(
             out_channels, hidden_channels, 1, batch_first=True, dropout=dropout, bidirectional=bidirectional)
-        self.inter_rnn = getattr(nn, rnn_type)(
+        self.inter_rnn = getattr(torch.nn, rnn_type)(
             out_channels, hidden_channels, 1, batch_first=True, dropout=dropout, bidirectional=bidirectional)
         # Norm
         self.intra_norm = select_norm(norm, out_channels, 4)
         self.inter_norm = select_norm(norm, out_channels, 4)
         # Linear
-        self.intra_linear = nn.Linear(
+        self.intra_linear = torch.nn.Linear(
             hidden_channels*2 if bidirectional else hidden_channels, out_channels)
-        self.inter_linear = nn.Linear(
+        self.inter_linear = torch.nn.Linear(
             hidden_channels*2 if bidirectional else hidden_channels, out_channels)
         
 
@@ -232,7 +167,7 @@ class Dual_RNN_Block(nn.Module):
         return out
 
 
-class Dual_Path_RNN(nn.Module):
+class Dual_Path_RNN(torch.nn.Module):
     '''
        Implementation of the Dual-Path-RNN model
        input:
@@ -257,25 +192,25 @@ class Dual_Path_RNN(nn.Module):
         self.speaker_num = speaker_num
         self.num_layers = num_layers
         self.norm = select_norm(norm, in_channels, 3)
-        self.conv1d = nn.Conv1d(in_channels, out_channels, 1, bias=False)
+        self.conv1d = torch.nn.Conv1d(in_channels, out_channels, 1, bias=False)
 
-        self.dual_rnn = nn.ModuleList([])
+        self.dual_rnn = torch.nn.ModuleList([])
         for i in range(num_layers):
             self.dual_rnn.append(Dual_RNN_Block(out_channels, hidden_channels,
                                      rnn_type=rnn_type, norm=norm, dropout=dropout,
                                      bidirectional=bidirectional))
 
-        self.conv2d = nn.Conv2d(
+        self.conv2d = torch.nn.Conv2d(
             out_channels, out_channels*speaker_num, kernel_size=1)
-        self.end_conv1x1 = nn.Conv1d(out_channels, in_channels, 1, bias=False)
-        self.prelu = nn.PReLU()
-        self.activation = nn.ReLU()
+        self.end_conv1x1 = torch.nn.Conv1d(out_channels, in_channels, 1, bias=False)
+        self.prelu = torch.nn.PReLU()
+        self.activation = torch.nn.ReLU()
          # gated output layer
-        self.output = nn.Sequential(nn.Conv1d(out_channels, out_channels, 1),
-                                    nn.Tanh()
+        self.output = torch.nn.Sequential(torch.nn.Conv1d(out_channels, out_channels, 1),
+                                    torch.nn.Tanh()
                                     )
-        self.output_gate = nn.Sequential(nn.Conv1d(out_channels, out_channels, 1),
-                                         nn.Sigmoid()
+        self.output_gate = torch.nn.Sequential(torch.nn.Conv1d(out_channels, out_channels, 1),
+                                         torch.nn.Sigmoid()
                                          )
 
     def forward(self, x):
@@ -370,7 +305,7 @@ class Dual_Path_RNN(nn.Module):
 
         return input
 
-class Dual_RNN_model(nn.Module):
+class Dual_RNN_model(torch.nn.Module):
     '''
        model of Dual Path RNN
        input:
@@ -392,7 +327,7 @@ class Dual_RNN_model(nn.Module):
                  kernel_size=2, rnn_type='LSTM', norm='ln', dropout=0,
                  bidirectional=False, num_layers=4, K=200, speaker_num=2):
         super(Dual_RNN_model,self).__init__()
-        self.encoder = Encoder(kernel_size=kernel_size,out_channels=in_channels)
+        self.encoder = Encoder(kernel_size=kernel_size,out_channels=in_channels, bias = False)
         self.separation = Dual_Path_RNN(in_channels, out_channels, hidden_channels,
                  rnn_type=rnn_type, norm=norm, dropout=dropout,
                  bidirectional=bidirectional, num_layers=num_layers, K=K, speaker_num=speaker_num)
@@ -417,5 +352,3 @@ if __name__ == "__main__":
     #encoder = Encoder(16, 512)
     x = torch.ones(1, 100)
     out = rnn(x)
-    print("{:.3f}".format(check_parameters(rnn)*1000000))
-    print(rnn)

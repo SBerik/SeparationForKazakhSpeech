@@ -1,18 +1,10 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
-import sys
-sys.path.append('../')
 
-def check_parameters(net):
-    '''
-        Returns module parameters. Mb
-    '''
-    parameters = sum(param.numel() for param in net.parameters())
-    return parameters / 10**6
+from modules import Encoder, Decoder
 
 
-class GlobalLayerNorm(nn.Module):
+class GlobalLayerNorm(torch.nn.Module):
     '''
        Calculate Global Layer Normalization
        dim: (int or list or torch.Size) –
@@ -30,8 +22,8 @@ class GlobalLayerNorm(nn.Module):
         self.elementwise_affine = elementwise_affine
 
         if self.elementwise_affine:
-            self.weight = nn.Parameter(torch.ones(self.dim, 1))
-            self.bias = nn.Parameter(torch.zeros(self.dim, 1))
+            self.weight = torch.nn.Parameter(torch.ones(self.dim, 1))
+            self.bias = torch.nn.Parameter(torch.zeros(self.dim, 1))
         else:
             self.register_parameter('weight', None)
             self.register_parameter('bias', None)
@@ -55,7 +47,7 @@ class GlobalLayerNorm(nn.Module):
         return x
 
 
-class CumulativeLayerNorm(nn.LayerNorm):
+class CumulativeLayerNorm(torch.nn.LayerNorm):
     '''
        Calculate Cumulative Layer Normalization
        dim: you want to norm dim
@@ -83,12 +75,12 @@ def select_norm(norm, dim):
     if norm == 'cln':
         return CumulativeLayerNorm(dim, elementwise_affine=True)
     if norm == 'ln':
-        return nn.GroupNorm(1, dim)
+        return torch.nn.GroupNorm(1, dim)
     else:
-        return nn.BatchNorm1d(dim)
+        return torch.nn.BatchNorm1d(dim)
 
 
-class Conv1D(nn.Module):
+class Conv1D(torch.nn.Module):
     '''
        Build the Conv1D structure
        causal: if True is causal setting
@@ -98,16 +90,16 @@ class Conv1D(nn.Module):
                  kernel_size=3, dilation=1, norm='gln', causal=False):
         super(Conv1D, self).__init__()
         self.causal = causal
-        self.conv1x1 = nn.Conv1d(in_channels, out_channels, kernel_size=1)
-        self.PReLu1 = nn.PReLU()
+        self.conv1x1 = torch.nn.Conv1d(in_channels, out_channels, kernel_size=1)
+        self.PReLu1 = torch.nn.PReLU()
         self.norm1 = select_norm(norm, out_channels)
         self.pad = (dilation*(kernel_size-1)
                     )//2 if not causal else dilation*(kernel_size-1)
-        self.dwconv = nn.Conv1d(out_channels, out_channels, kernel_size=kernel_size,
+        self.dwconv = torch.nn.Conv1d(out_channels, out_channels, kernel_size=kernel_size,
                                 groups=out_channels, padding=self.pad, dilation=dilation)
-        self.PReLu2 = nn.PReLU()
+        self.PReLu2 = torch.nn.PReLU()
         self.norm2 = select_norm(norm,out_channels)
-        self.end_conv1x1 = nn.Conv1d(out_channels, in_channels, 1)
+        self.end_conv1x1 = torch.nn.Conv1d(out_channels, in_channels, 1)
 
     def forward(self, x):
         """
@@ -131,63 +123,7 @@ class Conv1D(nn.Module):
         return x+x_conv
 
 
-class Encoder(nn.Module):
-    '''
-       Conv-Tasnet Encoder part
-       kernel_size: the length of filters
-       out_channels: the number of filters
-    '''
-
-    def __init__(self, kernel_size=2, out_channels=64):
-        super(Encoder, self).__init__()
-        self.conv1d = nn.Conv1d(in_channels=1, out_channels=out_channels,
-                                kernel_size=kernel_size, stride=kernel_size//2,groups=1)
-
-    def forward(self, x):
-        """
-          Input:
-              x: [B, T], B is batch size, T is times
-          Returns:
-              x: [B, C, T_out]
-              T_out is the number of time steps
-        """
-        # B x T -> B x 1 x T
-        x = torch.unsqueeze(x, dim=1)
-        # B x 1 x T -> B x C x T_out
-        x = self.conv1d(x)
-        x = F.relu(x)
-        return x
-
-
-class Decoder(nn.ConvTranspose1d):
-    '''
-        Decoder of the TasNet
-        This module can be seen as the gradient of Conv1d with respect to its input. 
-        It is also known as a fractionally-strided convolution 
-        or a deconvolution (although it is not an actual deconvolution operation).
-    '''
-
-    def __init__(self, *args, **kwargs):
-        super(Decoder, self).__init__(*args, **kwargs)
-
-    def forward(self, x):
-        """
-        x: N x L or N x C x L
-        """
-        if x.dim() not in [2, 3]:
-            raise RuntimeError("{} accept 2/3D tensor as input".format(
-                self.__name__))
-        x = super().forward(x if x.dim() == 3 else torch.unsqueeze(x, 1))
-        
-        if torch.squeeze(x).dim() == 1:
-            x = torch.squeeze(x,dim=1)
-        else:
-            x = torch.squeeze(x)
-            
-        return x
-
-
-class Separation_TasNet(nn.Module):
+class Separation_TasNet(torch.nn.Module):
     '''
        TasNet Separation part
        LayerNorm -> 1x1Conv -> 1-D Conv .... -> output
@@ -196,14 +132,14 @@ class Separation_TasNet(nn.Module):
     def __init__(self, repeats=3, conv1d_block=8, in_channels=64, out_channels=128,
                  out_sp_channels=512, kernel_size=3, norm='gln', causal=False, num_spks=2):
         super(Separation_TasNet, self).__init__()
-        self.conv1x1 = nn.Conv1d(in_channels, out_channels, 1)
+        self.conv1x1 = torch.nn.Conv1d(in_channels, out_channels, 1)
         self.conv1d_list = self._Sequential(
             repeats, conv1d_block, in_channels=out_channels, out_channels=out_sp_channels,
             kernel_size=kernel_size, norm=norm, causal=causal)
-        self.PReLu = nn.PReLU()
+        self.PReLu = torch.nn.PReLU()
         self.norm = select_norm('cln', in_channels)
-        self.end_conv1x1 = nn.Conv1d(out_channels, num_spks*in_channels, 1)
-        self.activation = nn.Sigmoid()
+        self.end_conv1x1 = torch.nn.Conv1d(out_channels, num_spks*in_channels, 1)
+        self.activation = torch.nn.Sigmoid()
         self.num_spks = num_spks
 
     def _Sequential_block(self, num_blocks, **block_kwargs):
@@ -216,7 +152,7 @@ class Separation_TasNet(nn.Module):
         Conv1D_lists = [Conv1D(
             **block_kwargs, dilation=(2**i)) for i in range(num_blocks)]
 
-        return nn.Sequential(*Conv1D_lists)
+        return torch.nn.Sequential(*Conv1D_lists)
     
     def _Sequential(self, num_repeats, num_blocks, **block_kwargs):
         '''
@@ -228,7 +164,7 @@ class Separation_TasNet(nn.Module):
         '''
         repeats_lists = [self._Sequential_block(
             num_blocks, **block_kwargs) for i in range(num_repeats)]
-        return nn.Sequential(*repeats_lists)
+        return torch.nn.Sequential(*repeats_lists)
 
     def forward(self, x):
         """
@@ -251,7 +187,7 @@ class Separation_TasNet(nn.Module):
         return x
 
 
-class Conv_TasNet(nn.Module):
+class Conv_TasNet(torch.nn.Module):
     '''
        ConvTasNet module
        N	Number of ﬁlters in autoencoder
@@ -307,4 +243,3 @@ if __name__ == "__main__":
     #encoder = Encoder(16, 512)
     x = torch.randn(4, 32000)
     out = conv(x)
-    print("{:.3f}".format(check_parameters(conv)))
