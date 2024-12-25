@@ -1,5 +1,5 @@
-import torch.nn.functional as F
 import torch
+import torch.nn.functional as F
 
 from modules import Encoder, Decoder
 
