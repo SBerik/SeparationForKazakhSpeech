@@ -13,7 +13,7 @@ data:
   shuffle: true
   num_workers: 0 
   batch_size: 2
-  pin_memory: True
+  pin_memory: true
   sample_rate: 16000
   chunk_size: 32000
   least_size: 16000
@@ -32,11 +32,11 @@ model:
   K: 250
   speaker_num: 2
 trainer:
-  num_epochs: 100
+  num_epochs: 200
   device: 'cuda'
-  best_weights: True
-  checkpointing: True
-  checkpoint_interval: 3
+  best_weights: true
+  checkpointing: true
+  checkpoint_interval: 1
   model_name: Dual_Path_RNN
   trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights'

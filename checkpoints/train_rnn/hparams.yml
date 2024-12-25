@@ -26,12 +26,12 @@ model:
   speaker_num: 2
 trainer:
   best_weights: true
-  checkpoint_interval: 3
+  checkpoint_interval: 1
   checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
   model_name: Dual_Path_RNN
-  num_epochs: 100
+  num_epochs: 200
   path_to_weights: ./weights
   resume: false
   speaker_num: 2
