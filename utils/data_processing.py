@@ -1,4 +1,7 @@
+import os
+
 import torchaudio
+
 
 def read_wav(fname, return_rate=False):
     '''
@@ -17,3 +20,11 @@ def read_wav(fname, return_rate=False):
         return src.squeeze(), sr
     else:
         return src.squeeze()
+    
+
+def write_wav(fname, src, sample_rate):
+    torchaudio.save(fname, src, sample_rate)
+
+
+def get_file_name(file_path: str):
+    return os.path.splitext(os.path.basename(file_path))[0]
