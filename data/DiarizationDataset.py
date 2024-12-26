@@ -1,10 +1,12 @@
+import math
+import random
+
+import torch as th
+import numpy as np
+import pandas as pd
+
 from data.Dataset import Datasets
 from utils.measure_time import measure_time 
-import torch as th
-import random
-import numpy as np
-import math
-import pandas as pd
 
 
 class DiarizationDataset:
@@ -49,8 +51,12 @@ class DiarizationDataset:
                                         chunk_size = self.chunk_size,
                                         least_size = self.least_size)
             print(f"Size of validation set: {len(self.val_dataset)}")
-        # To Do 
-        # self.test_dataset
+        else:
+            self.test_dataset = Datasets(self.test_df,
+                                        sample_rate = self.sample_rate,
+                                        chunk_size = self.chunk_size,
+                                        least_size = self.least_size)
+            print(f"Size of test set: {len(self.test_dataset)}")
         
         return self # warning! 
         
@@ -71,6 +77,15 @@ class DiarizationDataset:
                                     num_workers = self.num_workers,
                                     worker_init_fn=self.seed_worker,
                                     generator=self.g)
+    
+    def test_dataloader(self):
+        return th.utils.data.DataLoader(self.test_dataset,
+                                    batch_size = self.batch_size,
+                                    pin_memory = self.pin_memory,
+                                    shuffle = False,
+                                    num_workers = self.num_workers,
+                                    worker_init_fn=self.seed_worker,
+                                    generator=self.g)
 
     def _set_seed(self, seed: int):
         random.seed(seed)
@@ -83,9 +98,6 @@ class DiarizationDataset:
         np.random.seed(worker_seed)
         random.seed(worker_seed)
         
-    # ToDo
-    # def test_dataloader(self):
-
 
 # if __name__ == '__main__':
 #     import argparse
