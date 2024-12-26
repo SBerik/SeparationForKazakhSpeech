@@ -25,7 +25,7 @@ def main(hparams_file):
     datamodule = DiarizationDataset(**cfg['data']).setup(stage = 'train')
     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
     # Load model
-    model_class  = MODELS(**cfg['xp_config']['model_type'])
+    model_class = MODELS[cfg['xp_config']['model_type']]
     model = model_class(**cfg['model'])
     # Meta-data
     metadata_info(model)
