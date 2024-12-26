@@ -1,14 +1,14 @@
-import os
 import argparse
 from pathlib import Path
 
 import torch
 from torch.utils.tensorboard import SummaryWriter as TensorBoard
+from torchmetrics.audio import SignalDistortionRatio
 
 from losses import sisnr_loss, sdr_loss
 from utils.load_config import load_config 
-from utils.training import metadata_info, configure_optimizer, p_output_log
-from models import Conv_TasNet, Dual_RNN_model
+from utils.training import metadata_info, configure_optimizer
+from models import MODELS
 from trainer import Trainer
 from data.DiarizationDataset import DiarizationDataset
 
@@ -17,6 +17,7 @@ torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 torch.set_float32_matmul_precision('medium')
 
+
 def main(hparams_file):
     # Loading config file    
     cfg = load_config(hparams_file)
@@ -24,7 +25,8 @@ def main(hparams_file):
     datamodule = DiarizationDataset(**cfg['data']).setup(stage = 'train')
     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
     # Load model
-    model = Dual_RNN_model(**cfg['model'])
+    model_class  = MODELS(**cfg['xp_config']['model_type'])
+    model = model_class(**cfg['model'])
     # Meta-data
     metadata_info(model)
     # TensorBoard
