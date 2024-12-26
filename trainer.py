@@ -60,7 +60,7 @@ class Trainer:
     def load_pretrained_model(self, model, optimizer):
         if self.trained_model:
             print(f"Load pretrained mode: {self.trained_model}", '\n')
-            checkpoint = torch.load(self.trained_model, map_location=self.device)
+            checkpoint = torch.load(self.trained_model, map_location=self.device, weights_only=False)
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             return checkpoint['epoch'] + 1, checkpoint['val_loss'] , model, optimizer
