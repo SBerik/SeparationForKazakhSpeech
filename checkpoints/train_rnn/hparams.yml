@@ -30,7 +30,7 @@ trainer:
   checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
-  model_name: Dual_Path_RNN
+  model_name: DualPath_RNN
   num_epochs: 200
   path_to_weights: ./weights
   resume: false
@@ -44,6 +44,6 @@ training:
   weight_decay: 1.0e-05
 xp_config:
   dataset: ISSAI_KSC2
-  model_type: Dual_Path_RNN
+  model_type: DualPath_RNN
   speaker_num: 2
   use_tb_logger: false
