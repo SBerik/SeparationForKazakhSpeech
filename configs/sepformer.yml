@@ -34,7 +34,7 @@ trainer:
   best_weights: true
   checkpointing: true
   checkpoint_interval: 1
-  model_name: Dual_Path_RNN
+  model_name: Sepformer
   trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights'
   ckpt_folder: ./checkpoints/
