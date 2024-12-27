@@ -35,7 +35,7 @@ trainer:
   path_to_weights: ./weights
   resume: false
   speaker_num: 2
-  trained_model: ./checkpoints/train_rnn/checkpoint_Dual_Path_RNN_epoch_16.pt
+  trained_model: ./checkpoints/train_rnn/checkpoint_Dual_Path_RNN_epoch_38.pt
 training:
   clip_norm: 5
   lr: 0.0005
