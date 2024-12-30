@@ -18,8 +18,8 @@ def save_graph_tb_log_metrics(first_csv_path, second_csv_path, name_ox, name_oy,
     epochs_val, values_val = m_val['Step'], m_val['Value']
 
     plt.figure(figsize=(10, 6))
-    plt.plot(epochs_train, values_train, marker='o', linestyle='--', color='red', label=f"Train {name_oy}")
-    plt.plot(epochs_val, values_val, marker='o', linestyle='-', color='blue', label=f"Validation {name_oy}")
+    plt.plot(epochs_train, values_train, linestyle='--', color='red', label=f"Train {name_oy}")
+    plt.plot(epochs_val, values_val, linestyle='-', color='blue', label=f"Validation {name_oy}")
     plt.xlabel(name_ox)
     plt.ylabel(name_oy)
     plt.legend(loc=loc) 
