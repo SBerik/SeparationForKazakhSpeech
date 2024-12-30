@@ -19,22 +19,18 @@ class Separation:
     def separate(self, mixed_sample, file_path):
         name = get_file_name(mixed_sample)
         mixed = read_wav(mixed_sample)
-        
         self.net.eval()
         with torch.no_grad():
             norm = torch.norm(mixed, float('inf'))
-            mixed = torch.unsqueeze(mixed, 0)
-            mixed = mixed.to(self.device)
-            ests=self.net(mixed)
-            spks=[torch.squeeze(s.detach().cpu()) for s in ests]
-            index=0
-            for s in spks:
+            mixed = torch.unsqueeze(mixed, 0).to(self.device)
+            ests = self.net(mixed)
+            spks = [torch.squeeze(s.detach()) for s in ests]
+            for index, s in enumerate(spks):
                 s = s - torch.mean(s)
                 s = s * norm / torch.max(torch.abs(s))
-                index += 1
-                os.makedirs(file_path + '/spk' + str(index), exist_ok=True)
-                filename = file_path + '/spk' + str(index) + '/' + name + '_inferenced.flac'
-                write_wav(filename, s.unsqueeze(0), 16000)
+                os.makedirs(file_path + '/spk' + str(index+1), exist_ok=True)
+                filename = file_path + '/spk' + str(index+1) + '/inferenced_' + name + '.flac'
+                write_wav(filename, s.unsqueeze(0).cpu(), 16000)
                 print('saved in:', filename)
 
 
