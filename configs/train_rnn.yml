@@ -5,7 +5,7 @@ xp_config:
   speaker_num: 2
 
 data:
-  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_tts_tvnews=5000_k=2.csv'
+  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
   total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
@@ -39,7 +39,7 @@ trainer:
   checkpointing: true
   checkpoint_interval: 1
   model_name: DualPath_RNN
-  trained_model: './checkpoints/train_rnn/checkpoint_Dual_Path_RNN_epoch_38.pt' # weights/Dual_Path_RNN_1_-0.1336.pt 
+  trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights'
   ckpt_folder: ./checkpoints/
   speaker_num: 2

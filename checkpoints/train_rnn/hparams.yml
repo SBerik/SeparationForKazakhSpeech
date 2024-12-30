@@ -1,7 +1,7 @@
 data:
   batch_size: 2
   chunk_size: 32000
-  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_tts_tvnews=5000_k=2.csv
+  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv
   least_size: 16000
   num_workers: 0
   pin_memory: true
@@ -35,7 +35,7 @@ trainer:
   path_to_weights: ./weights
   resume: false
   speaker_num: 2
-  trained_model: ./checkpoints/train_rnn/checkpoint_Dual_Path_RNN_epoch_38.pt
+  trained_model: ''
 training:
   clip_norm: 5
   lr: 0.0005
