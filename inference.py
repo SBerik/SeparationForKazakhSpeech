@@ -10,7 +10,8 @@ from utils.data_processing import *
 class Separation:
     def __init__(self, cfg, weight, device = 'cpu'):
         self.device = device
-        model_class = MODELS[cfg['xp_config']['model_type']]
+        self.model_type = cfg['xp_config']['model_type']
+        model_class = MODELS[self.model_type]
         self.net = model_class(**cfg['model'])
         self.net.to(device)
         dicts = torch.load(weight, map_location=device, weights_only=False)
@@ -25,11 +26,12 @@ class Separation:
             mixed = torch.unsqueeze(mixed, 0).to(self.device)
             ests = self.net(mixed)
             spks = [torch.squeeze(s.detach()) for s in ests]
+            files_name = name.split('_')[::-1]
             for index, s in enumerate(spks):
                 s = s - torch.mean(s)
                 s = s * norm / torch.max(torch.abs(s))
-                os.makedirs(file_path + '/spk' + str(index+1), exist_ok=True)
-                filename = file_path + '/spk' + str(index+1) + '/inferenced_' + name + '.flac'
+                os.makedirs(file_path + '/' + self.model_type + '/spk' + str(index+1), exist_ok=True)
+                filename = file_path + '/' + self.model_type + '/spk' + str(index+1) + '/' + files_name[index] + '.flac'
                 write_wav(filename, s.unsqueeze(0).cpu(), 16000)
                 print('saved in:', filename)
 
