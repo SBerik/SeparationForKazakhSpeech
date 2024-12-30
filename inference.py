@@ -40,9 +40,9 @@ class Separation:
 
 if __name__ == "__main__":
     parser=argparse.ArgumentParser()
-    parser.add_argument('-m', '--mixed_sample', type=str, default='./samples/f1_inform_1051_00_f1_inform_1082_00.flac', help='Path to mix scp file.')
+    parser.add_argument('-m', '--mixed_sample', type=str, default='./samples/5ed8a9a769a27_5f885557c7f91.flac', help='Path to mix scp file.')
     parser.add_argument('-c', '--config', type=str, default='./configs/train_rnn.yml', help='Path to yaml file.')
-    parser.add_argument('-w', '--weight', type=str, default='./weights/Dual_Path_RNN_34_-2.4656.pt', help="Path to model file.")
+    parser.add_argument('-w', '--weight', type=str, default='./weights/DualPath_RNN_179_-3.1895.pt', help="Path to model file.")
     parser.add_argument('-s', '--save_path', type=str, default='./samples', help='save result path')
     args = parser.parse_args()
     cfg = load_config(args.config)
