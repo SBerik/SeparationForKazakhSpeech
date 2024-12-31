@@ -9,7 +9,7 @@ data:
   seed: 42
   shuffle: true
   test_percent: 0.1
-  total_percent: 1.0
+  total_percent: 0.2
   train_percent: 0.8
   valid_percent: 0.1
 model:
