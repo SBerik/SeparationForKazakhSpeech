@@ -26,7 +26,7 @@ model:
   H: 8
   K: 250
   Global_B: 2
-  Local_B": 8
+  Local_B: 8
 
 trainer:
   num_epochs: 200
