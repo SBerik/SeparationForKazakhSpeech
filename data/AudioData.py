@@ -111,7 +111,11 @@ class AudioReader(object):
         '''
         for key in self.keys:
             common_len, name = self.index_dict[key]['common_len'], self.index_dict[key]['name']
-            utt = read_wav(name)
+            utt, sr = read_wav(name, return_rate = True)
+            if sr != self.sample_rate:
+                resample_transform = torchaudio.transforms.Resample(orig_freq=sr, new_freq=self.sample_rate)
+                utt = resample_transform(utt)
+                sr = self.sample_rate
             utt = utt[:common_len]
             if utt.shape[0] < self.least_size:
                 continue
