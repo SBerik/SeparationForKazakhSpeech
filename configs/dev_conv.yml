@@ -1,18 +1,18 @@
 xp_config:
-  model_type: Sepformer
+  model_type: Conv_TasNet
   dataset: ISSAI_KSC2
   use_tb_logger: false
   speaker_num: 2
 
 data:
-  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_tts_tvnews=5000_k=2.csv'
+  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
   total_percent: 1.0
-  train_percent: 0.8
-  valid_percent: 0.1
-  test_percent: 0.1
+  train_percent: 0.5
+  valid_percent: 0.5
+  test_percent: 0.0
   shuffle: false
   num_workers: 0 
-  batch_size: 1
+  batch_size: 2
   pin_memory: true
   sample_rate: 16000
   chunk_size: 32000
@@ -20,21 +20,25 @@ data:
   seed: 42
 
 model:
-  N: 256
-  C: 2
+  N: 512
   L: 16
-  H: 8
-  K: 250
-  Global_B: 2
-  Local_B: 8
+  B: 128
+  H: 512
+  P: 3
+  X: 8
+  R: 3
+  norm: gln
+  num_spks: 2
+  activate: relu
+  causal: false
 
 trainer:
-  num_epochs: 200
+  num_epochs: 1000
   device: 'cuda'
-  best_weights: true
-  checkpointing: true
+  best_weights: false
+  checkpointing: false
   checkpoint_interval: 1
-  model_name: Sepformer
+  model_name: Conv_TasNet
   trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights'
   ckpt_folder: ./checkpoints/
@@ -43,7 +47,7 @@ trainer:
 
 training:
   optim: Adam   ### Adam, RMSprop, SGD
-  lr: !!float 0.001
+  lr: !!float 0.0003
   weight_decay: 1.0e-05
-  momentum: 0
-  clip_norm: 5
+  momentum: 0.9
+  clip_norm: 200
