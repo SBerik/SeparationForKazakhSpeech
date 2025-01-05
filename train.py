@@ -5,7 +5,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter as TensorBoard
 from torchmetrics.audio import SignalDistortionRatio
 
-from losses import sisnr_loss, sdr_loss
+from losses import sisnr_pit
 from utils.load_config import load_config 
 from utils.training import metadata_info, configure_optimizer
 from models import MODELS
@@ -34,7 +34,7 @@ def main(hparams_file):
     # Optimizer
     optimizer = configure_optimizer (cfg, model)
     # Train
-    Trainer(**cfg['trainer']).fit(model, dataloaders, sisnr_loss, optimizer, writer)
+    Trainer(**cfg['trainer']).fit(model, dataloaders, sisnr_pit, optimizer, writer)
 
 
 if __name__ == '__main__':

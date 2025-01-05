@@ -1,6 +1,7 @@
 import torch
 from itertools import permutations
 
+
 def sisnr(x, s, eps=1e-8):
     """
     calculate training loss
@@ -26,20 +27,18 @@ def sisnr(x, s, eps=1e-8):
     return 20 * torch.log10(eps + l2norm(t) / (l2norm(x_zm - t) + eps))
 
 
-def SISNR_Loss(ests, egs):
-
-
-    # spks x batch x S
+# pit: permutation_invariant_training
+def sisnr_pit_loss(ests, egs):
+    # spks x batch x S(time)
     refs = egs
     num_spks = len(refs)
 
-    # Example
-    # batch = 1
-    # spk = 2
-    # time = 32000
-    # ests = [torch.randn(batch, time) for _ in range(spk)]
-    # egs = [torch.randn(batch, time) for _ in range(spk)]
-
+    """
+    Example - batch = 1 spk = 2 time = 32000
+    ests = [torch.randn(batch, time) for _ in range(spk)] 
+    egs = [torch.randn(batch, time) for _ in range(spk)]
+    """
+    
     def sisnr_loss(permute):
         # for one permute
         return sum([sisnr(ests[s], refs[t]) for s, t in enumerate(permute)]) / len(permute)

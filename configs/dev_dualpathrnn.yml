@@ -6,7 +6,7 @@ xp_config:
 
 data:
   data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
-  total_percent: 0.2
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
   test_percent: 0.1
