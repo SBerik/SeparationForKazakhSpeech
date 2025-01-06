@@ -39,7 +39,7 @@ class Trainer:
                     inputs, labels = inputs.to(self.device), [l.to(self.device) for l in labels]
                     with torch.set_grad_enabled(phase == 'train'):
                         outputs = model(inputs)
-                        losses = {'sisnr': criterions['sisnr'](outputs, labels),
+                        losses = {'sisnr': - criterions['sisnr'](outputs, labels),
                                   'sdr': - criterions['sdr'](tensify(outputs, self.device), tensify(labels, self.device))}                        
                         loss = self.alpha * losses["sisnr"] + self.beta * losses["sdr"]
                         if phase == 'train':
