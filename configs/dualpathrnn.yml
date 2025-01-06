@@ -33,7 +33,7 @@ model:
   speaker_num: 2
 
 trainer:
-  num_epochs: 200
+  epochs: 200
   device: 'cuda'
   best_weights: false
   checkpointing: false

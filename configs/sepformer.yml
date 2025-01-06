@@ -29,7 +29,7 @@ model:
   Local_B: 8
 
 trainer:
-  num_epochs: 200
+  epochs: 200
   device: 'cuda'
   best_weights: true
   checkpointing: true

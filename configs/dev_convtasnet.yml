@@ -33,7 +33,7 @@ model:
   causal: false
 
 trainer:
-  num_epochs: 1000
+  epochs: 1000
   device: 'cuda'
   best_weights: false
   checkpointing: false
