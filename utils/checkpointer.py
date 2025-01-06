@@ -1,12 +1,10 @@
 import torch
 
 class Checkpointer:
-    def __init__(self, model_name, path_to_weights, 
-                 checkpoint_path, metrics = True):
+    def __init__(self, model_name, path_to_weights, checkpoint_path):
         self.model_name = model_name
         self.path_to_weights = path_to_weights
-        self.checkpoint_path = checkpoint_path
-        self.metrics = metrics 
+        self.checkpoint_path = checkpoint_path 
 
     def save_best_weight(self, model, optimizer, epoch, epoch_state): 
         val_loss = epoch_state['valid']['loss'] 

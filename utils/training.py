@@ -1,4 +1,6 @@
 import torch
+from typing import List
+
 
 def configure_optimizer(cfg, model):
     assert cfg['training']["optim"] in ['Adam', 'SGD'], "Invalid optimizer type"
@@ -18,18 +20,6 @@ def torch_logger (writer, epoch, epoch_state):
                 'Train': epoch_state['train']['metrics'][m], 
                 'Validation': epoch_state['valid']['metrics'][m]
             }, epoch)
-
-
-def p_output_log(num_epochs, epoch, phase, epoch_state):
-    if phase == 'train':
-        print(f'Epoch {epoch+1}/{num_epochs}')
-    print(f"{phase.upper()}, Loss: {epoch_state[phase]['loss']:.4f}", end="")
-    if epoch_state.metrics:
-        for m in epoch_state['metrics_name']:
-            print(f"{m}: {epoch_state[phase]['metrics'][m]:.4f} ", end="")
-    print() 
-    if phase == 'valid':
-        print('-' * 108, '\n')
 
 
 def getNumParams (model):
@@ -52,45 +42,74 @@ def metadata_info (model, dtype = 'float32') -> None:
     print("Size of model: {:.2f} MB, in {}".format(model_size, dtype))
 
 
+def tensify(sample: List[torch.Tensor], device) -> torch.Tensor:
+    return torch.stack(sample, dim=0).to(device)
+
+
 class EpochState(dict):
-    '''
-    Class: contains for current epoc losses and metrics 
-    __state:
-        metrics_name: [Acc, Pr, Fr]
-        'train': {
-                loss: 0.0,
-                metrics:
-                    'acc':
-                    'pr':
-                    'rc':
-        }
-        'valid': {
-                'loss': 0.0
-                metrics:
-                    'acc':
-                    'pr':
-                    'rc':
-        }
-    '''
-    def __init__(self, metrics = None):
+    """api:
+        from losses import sisnr_pit
+        from torchmetrics.audio import PermutationInvariantTraining
+        from torchmetrics.functional.audio import signal_distortion_ratio
+
+        losses = {"sisnr": sisnr_pit, 
+                "sdr": PermutationInvariantTraining(signal_distortion_ratio, 
+                                                            mode="speaker-wise", 
+                                                            eval_func="max")}
+        epoch_losses = EpochState(losses)
+        outputs, labels = ...
+        sdr_i, sisnr_i = - losses["sdr"](), losses["sisnr"]()
+        loss = aplha * sisnr_i + beta * sdr_i
+        ...
+        loss.backward()
+        epoch_losses.add(loss, phase, {"sisnr": sisnr_i, "sdr": sdr_i})
+        # running_loss += loss.item()
+    # epoch_loss = running_loss / len(dataloader)
+    epoch_losses.update_state(phase)
+    add - что бы добавить (в случае loss), в случае метрик - обновить
+    update - в случае метрик обновить и подсчетать
+    """
+    def __init__(self, metrics=None, epochs = 'cpu'):
         super().__init__()
         self.metrics = metrics
         if metrics:
             self['metrics_name'] = list(metrics.keys())
             for phase in ['train', 'valid']: 
-                self[phase] = {'loss': float('inf'), 'metrics': {m: 0.0 for m in self['metrics_name']}}
+                self[phase] = {'loss': 0.0, 'metrics': {m: 0.0 for m in self['metrics_name']}}
         else:
             for phase in ['train', 'valid']: 
-                self[phase] = {'loss': float('inf')}
-                
-    def update_state(self, loss, phase: str, metrics_val:dict = {}):
-        if self.metrics:
-            self[phase]['metrics'] = metrics_val
-        self[phase]['loss'] = loss
+                self[phase] = {'loss': 0.0}
 
-# def torch_logger(writer, epoch, train_loss, val_loss, train_accuracy, val_accuracy):
-#     # Объединяем train и valid для Loss
-#     writer.add_scalars('Loss', {'Train': train_loss, 'Validation': val_loss}, epoch)
-    
-#     # Объединяем train и valid для Accuracy
-#     writer.add_scalars('Accuracy',  {'Train': train_accuracy, 'Validation': val_accuracy}, epoch)
+    def update_loss(self, phase, loss):
+        self[phase]['loss'] += loss.item()
+
+    def compute_loss(self, phase, N):
+        if phase not in self:
+            raise KeyError(f"Phase '{phase}' not initialized in EpochState.")
+        epoch_loss = self[phase]['loss'] / N
+        self[phase]['loss'] = epoch_loss
+        return epoch_loss
+
+    def update_metrics(self, phase, metrics):
+        """
+        Todo: updating for 'torchmetrics' 
+        """
+        for name, value in metrics.items():
+            self[phase]['metrics'][name] += value.item()
+
+    def compute_metrics(self, phase, N):
+        if phase not in self:
+            raise KeyError(f"Phase '{phase}' not initialized in EpochState.")
+        self[phase]['metrics'] = {k: val / N for k, val in self[phase]['metrics'].items()}
+        return self[phase]['metrics']
+
+    def p_output(self, epoch, phase):
+        if phase == 'train':
+            print(f'Epoch {epoch+1}/{self.epochs}')
+        print(f"{phase.upper()}, Loss: {self[phase]['loss']:.4f}", end="")
+        if self.metrics:
+            for m in self['metrics_name']:
+                print(f"{m}: {self[phase]['metrics'][m]:.4f} ", end="")
+        print() 
+        if phase == 'valid':
+            print('-' * 108, '\n')

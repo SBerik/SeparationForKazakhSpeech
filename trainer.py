@@ -7,13 +7,13 @@ from utils.checkpointer import Checkpointer
 from utils.training import * 
 
 class Trainer:
-    def __init__(self, num_epochs = 100, device='cuda', best_weights = False, checkpointing = False, 
+    def __init__(self, epochs = 100, device='cuda', best_weights = False, checkpointing = False, 
                  checkpoint_interval = 10, model_name = '', trained_model = './', path_to_weights= './weights', 
-                 ckpt_folder = '', speaker_num = 2, resume = False) -> None:
-        self.num_epochs = num_epochs
+                 ckpt_folder = '', speaker_num = 2, resume = False, alpha = 0.5, beta = 0.5) -> None:
+        self.epochs = epochs
         self.device = device
         self.best_weights = best_weights
-        self.ckpointer = Checkpointer(model_name, path_to_weights, ckpt_folder, metrics = False)
+        self.ckpointer = Checkpointer(model_name, path_to_weights, ckpt_folder)
         self.checkpointing = checkpointing
         self.checkpoint_interval = checkpoint_interval
         self.model_name = model_name
@@ -23,30 +23,34 @@ class Trainer:
         self.speaker_num = speaker_num
         self.resume = resume
         self.trained_model = trained_model
+        self.alpha = alpha
+        self.beta = beta
 
     @measure_time
-    def fit(self, model, dataloaders, criterion, optimizer, writer) -> None:
+    def fit(self, model, dataloaders, criterions, optimizer, writer) -> None:
         model.to(self.device)
         start_epoch, min_val_loss, model, optimizer = self.load_pretrained_model(model, optimizer)
-        epoch_state = EpochState(metrics = None)
-        for epoch in range(start_epoch, self.num_epochs):
+        epoch_state = EpochState(metrics = criterions)
+        for epoch in range(start_epoch, self.epochs):
             for phase in ['train', 'valid']:
                 model.train() if phase == 'train' else model.eval()
                 dataloader = dataloaders[phase] 
-                running_loss = 0.0
                 for inputs, labels in dataloader:
                     inputs, labels = inputs.to(self.device), [l.to(self.device) for l in labels]
                     with torch.set_grad_enabled(phase == 'train'):
                         outputs = model(inputs)
-                        loss = criterion(outputs, labels)
+                        losses = {'sisnr': criterions['sisnr'](outputs, labels),
+                                  'sdr': - criterions['sdr'](tensify(outputs, self.device), tensify(labels, self.device))}                        
+                        loss = self.alpha * losses["sisnr"] + self.beta * losses["sdr"]
                         if phase == 'train':
                             optimizer.zero_grad()
                             loss.backward()
                             optimizer.step()
-                    running_loss += loss.item()
-                epoch_loss = running_loss / len(dataloader.dataset)
-                epoch_state.update_state(epoch_loss, phase)
-                p_output_log(self.num_epochs, epoch, phase, epoch_state)
+                    epoch_state.update_loss(phase, loss)
+                    epoch_state.update_metrics(phase, losses)
+                epoch_loss = epoch_state.compute_loss(phase, len(dataloader))
+                epoch_metrics = epoch_state.compute_metrics(phase, len(dataloader))
+                epoch_state.p_output(epoch, phase)
                 
                 if phase == 'valid' and self.best_weights and epoch_loss < min_val_loss:
                     min_val_loss = epoch_loss

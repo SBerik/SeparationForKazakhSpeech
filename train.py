@@ -3,7 +3,9 @@ from pathlib import Path
 
 import torch
 from torch.utils.tensorboard import SummaryWriter as TensorBoard
-from torchmetrics.audio import SignalDistortionRatio
+from torchmetrics.audio import PermutationInvariantTraining as PIT
+from torchmetrics.audio import ScaleInvariantSignalNoiseRatio as sisnr
+from torchmetrics.functional.audio import signal_distortion_ratio as sdr
 
 from losses import sisnr_pit
 from utils.load_config import load_config 
@@ -33,12 +35,14 @@ def main(hparams_file):
     writer = TensorBoard(f'tb_logs/{Path(hparams_file).stem}', comment = f"{cfg['trainer']['ckpt_folder']}")
     # Optimizer
     optimizer = configure_optimizer (cfg, model)
+    # Loss and metrics
+    loss_funcs = {name: PIT(func).to(cfg['trainer']['device']) for name, func in {"sisnr": sisnr, "sdr": sdr}.items()}
     # Train
-    Trainer(**cfg['trainer']).fit(model, dataloaders, sisnr_pit, optimizer, writer)
+    Trainer(**cfg['trainer']).fit(model, dataloaders, loss_funcs, optimizer, writer)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--hparams", type=str, default="./configs/train_rnn.yml", help="hparams config file")
+    parser.add_argument("-p", "--hparams", type=str, default="./configs/dualpathrnn.yml", help="hparams config file")
     args = parser.parse_args()
     main(args.hparams)

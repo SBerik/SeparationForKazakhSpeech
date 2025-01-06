@@ -30,8 +30,8 @@ trainer:
   checkpointing: false
   ckpt_folder: ./checkpoints/
   device: cuda
+  epochs: 200
   model_name: DualPath_RNN
-  num_epochs: 200
   path_to_weights: ./weights
   resume: false
   speaker_num: 2

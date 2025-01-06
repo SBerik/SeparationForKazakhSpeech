@@ -4,6 +4,7 @@ sys.path.append('../')
 from data.AudioData import AudioReader
 import torch
 
+from utils.training import tensify
 
 class Datasets(torch.utils.data.Dataset):
     '''
@@ -34,8 +35,9 @@ class Datasets(torch.utils.data.Dataset):
         return len(self.mix_audio)
 
     def __getitem__(self, index):
-        return self.mix_audio[index], [ref[index] for ref in self.ref_audio]
-
+        refs = [ref[index] for ref in self.ref_audio]
+        refs = tensify(refs)
+        return self.mix_audio[index], refs 
 
 # if __name__ == "__main__":
 #     dataset = Datasets("/",
