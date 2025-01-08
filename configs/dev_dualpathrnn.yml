@@ -35,12 +35,12 @@ model:
 trainer:
   epochs: 200
   device: 'cuda'
-  best_weights: false
-  checkpointing: false
+  best_weights: true
+  checkpointing: true
   checkpoint_interval: 1
   model_name: DualPath_RNN
   trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
-  path_to_weights: './weights'
+  path_to_weights: './weights/dev_dualpathrnn'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
   resume: false
