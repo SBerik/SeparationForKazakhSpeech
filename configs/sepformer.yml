@@ -36,10 +36,11 @@ trainer:
   checkpoint_interval: 1
   model_name: Sepformer
   trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
-  path_to_weights: './weights'
+  path_to_weights: './weights/sepformer'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
-  resume: false
+  alpha: 0.55
+  beta: 0.45
 
 training:
   optim: Adam   ### Adam, RMSprop, SGD

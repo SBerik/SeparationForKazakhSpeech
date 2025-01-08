@@ -43,7 +43,6 @@ trainer:
   path_to_weights: './weights/dev_dualpathrnn'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
-  resume: false
   alpha: 0.55
   beta: 0.45
   
