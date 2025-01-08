@@ -9,7 +9,7 @@ data:
   seed: 42
   shuffle: false
   test_percent: 0.1
-  total_percent: 0.2
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
 model:
@@ -25,15 +25,16 @@ model:
   rnn_type: LSTM
   speaker_num: 2
 trainer:
-  best_weights: false
+  alpha: 0.55
+  best_weights: true
+  beta: 0.45
   checkpoint_interval: 1
-  checkpointing: false
+  checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
   epochs: 200
   model_name: DualPath_RNN
-  path_to_weights: ./weights
-  resume: false
+  path_to_weights: ./weights/dualpathrnn
   speaker_num: 2
   trained_model: ''
 training:
