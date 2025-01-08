@@ -42,8 +42,8 @@ def metadata_info (model, dtype = 'float32') -> None:
     print("Size of model: {:.2f} MB, in {}".format(model_size, dtype))
 
 
-def tensify(sample: List[torch.Tensor], device) -> torch.Tensor:
-    return torch.stack(sample, dim=0).to(device)
+def tensify(sample: List[torch.Tensor]) -> torch.Tensor:
+    return torch.stack(sample, dim=1)
 
 
 class EpochState(dict):
