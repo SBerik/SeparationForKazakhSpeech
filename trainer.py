@@ -53,16 +53,12 @@ class Trainer:
                 epoch_loss = epoch_state.compute_loss(phase, len(dataloader))
                 epoch_metrics = epoch_state.compute_metrics(phase, len(dataloader))
                 epoch_state.p_output(epoch, phase)
-                
                 if phase == 'valid' and self.best_weights and epoch_loss < min_val_loss:
                     min_val_loss = epoch_loss
                     self.ckpointer.save_best_weight(model, optimizer, epoch, epoch_state)
-            
             torch_logger(writer, epoch, epoch_state)
-            
             if self.checkpointing and (epoch + 1) % self.checkpoint_interval == 0:
                 self.ckpointer.save_checkpoint(model, optimizer, epoch, epoch_state)
-
             epoch_state.reset_state()
 
     def load_pretrained_model(self, model, optimizer):
