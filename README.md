@@ -36,5 +36,5 @@ The dataset used for this project is the **Kazakh Speech Corpus**, which is avai
 ## Hardware 
 Used GPU: `NVIDIA GeForce RTX 4090`  
 Number of GPUs: `1`  
-CUDA version: `cu118`
+CUDA version: `cu118` 
 Python version: `Python 3.9.0`
