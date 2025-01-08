@@ -6,7 +6,7 @@ $ git clone https://github.com/SBerik/SeparationForKazakhSpeech.git
 $ cd ./SeparationForKazakhSpeech
 $ python3 -m venv .venv 
 ```
-For Linux (Ubuntu):
+To activate. For Linux (Ubuntu):
 ```
 $ source .venv/bin/activate
 ```
