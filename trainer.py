@@ -6,6 +6,7 @@ from utils.measure_time import measure_time
 from utils.checkpointer import Checkpointer
 from utils.training import * 
 
+
 class Trainer:
     def __init__(self, epochs = 100, device='cuda', best_weights = False, checkpointing = False, 
                  checkpoint_interval = 10, model_name = '', trained_model = './', path_to_weights= './weights', 
@@ -39,9 +40,10 @@ class Trainer:
                     inputs, labels = inputs.to(self.device), [l.to(self.device) for l in labels]
                     with torch.set_grad_enabled(phase == 'train'):
                         outputs = model(inputs)
+                        outputs, labels = tensify(outputs).to(self.device), tensify(labels).to(self.device) 
                         losses = {'sisnr': - criterions['sisnr'](outputs, labels),
-                                  'sdr': - criterions['sdr'](tensify(outputs, self.device), tensify(labels, self.device))}                        
-                        loss = self.alpha * losses["sisnr"] + self.beta * losses["sdr"]
+                                  'sdr': - criterions['sdr'](outputs, labels)}  
+                        loss = self.alpha * losses['sisnr'] + self.beta * losses['sdr']
                         if phase == 'train':
                             optimizer.zero_grad()
                             loss.backward()

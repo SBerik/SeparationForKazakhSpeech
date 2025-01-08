@@ -4,10 +4,9 @@ from pathlib import Path
 import torch
 from torch.utils.tensorboard import SummaryWriter as TensorBoard
 from torchmetrics.audio import PermutationInvariantTraining as PIT
-from torchmetrics.audio import ScaleInvariantSignalNoiseRatio as sisnr
 from torchmetrics.functional.audio import signal_distortion_ratio as sdr
+from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio as sisnr
 
-from losses import sisnr_pit
 from utils.load_config import load_config 
 from utils.training import metadata_info, configure_optimizer
 from models import MODELS
