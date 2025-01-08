@@ -40,7 +40,7 @@ def metadata_info (model, dtype = 'float32') -> None:
     
     print(f"Trainable parametrs: {num_params}")
     print("Size of model: {:.2f} MB, in {}".format(model_size, dtype))
-
+    print('-' * 68)
 
 def tensify(sample: List[torch.Tensor]) -> torch.Tensor:
     return torch.stack(sample, dim=1)
@@ -98,4 +98,4 @@ class EpochState(dict):
                 print(f" {m}: {self[phase]['metrics'][m]:.4f} ", end="|")
         print() 
         if phase == 'valid':
-            print('-' * 108)
+            print('-' * 68)
