@@ -47,38 +47,23 @@ def tensify(sample: List[torch.Tensor]) -> torch.Tensor:
 
 
 class EpochState(dict):
-    """api:
-        from losses import sisnr_pit
-        from torchmetrics.audio import PermutationInvariantTraining
-        from torchmetrics.functional.audio import signal_distortion_ratio
-
-        losses = {"sisnr": sisnr_pit, 
-                "sdr": PermutationInvariantTraining(signal_distortion_ratio, 
-                                                            mode="speaker-wise", 
-                                                            eval_func="max")}
-        epoch_losses = EpochState(losses)
-        outputs, labels = ...
-        sdr_i, sisnr_i = - losses["sdr"](), losses["sisnr"]()
-        loss = aplha * sisnr_i + beta * sdr_i
-        ...
-        loss.backward()
-        epoch_losses.add(loss, phase, {"sisnr": sisnr_i, "sdr": sdr_i})
-        # running_loss += loss.item()
-    # epoch_loss = running_loss / len(dataloader)
-    epoch_losses.update_state(phase)
-    add - что бы добавить (в случае loss), в случае метрик - обновить
-    update - в случае метрик обновить и подсчетать
-    """
-    def __init__(self, metrics=None, epochs = 'cpu'):
+    def __init__(self, metrics=None, epochs=100):
         super().__init__()
+        self.epochs = epochs
         self.metrics = metrics
         if metrics:
             self['metrics_name'] = list(metrics.keys())
-            for phase in ['train', 'valid']: 
+        self._initialize_phases()
+
+    def _initialize_phases(self):
+        for phase in ['train', 'valid']:
+            if self.metrics:
                 self[phase] = {'loss': 0.0, 'metrics': {m: 0.0 for m in self['metrics_name']}}
-        else:
-            for phase in ['train', 'valid']: 
+            else:
                 self[phase] = {'loss': 0.0}
+
+    def reset_state(self):
+        self._initialize_phases()
 
     def update_loss(self, phase, loss):
         self[phase]['loss'] += loss.item()
@@ -100,16 +85,17 @@ class EpochState(dict):
     def compute_metrics(self, phase, N):
         if phase not in self:
             raise KeyError(f"Phase '{phase}' not initialized in EpochState.")
-        self[phase]['metrics'] = {k: val / N for k, val in self[phase]['metrics'].items()}
-        return self[phase]['metrics']
+        epoch_metrics  = {name: val / N for name, val in self[phase]['metrics'].items()}
+        self[phase]['metrics'] = epoch_metrics
+        return epoch_metrics
 
     def p_output(self, epoch, phase):
         if phase == 'train':
             print(f'Epoch {epoch+1}/{self.epochs}')
-        print(f"{phase.upper()}, Loss: {self[phase]['loss']:.4f}", end="")
+        print(f"{phase.upper()}, loss: {self[phase]['loss']:.4f} ", end="|")
         if self.metrics:
             for m in self['metrics_name']:
-                print(f"{m}: {self[phase]['metrics'][m]:.4f} ", end="")
+                print(f" {m}: {self[phase]['metrics'][m]:.4f} ", end="|")
         print() 
         if phase == 'valid':
-            print('-' * 108, '\n')
+            print('-' * 108)

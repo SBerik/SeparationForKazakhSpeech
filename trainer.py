@@ -31,7 +31,7 @@ class Trainer:
     def fit(self, model, dataloaders, criterions, optimizer, writer) -> None:
         model.to(self.device)
         start_epoch, min_val_loss, model, optimizer = self.load_pretrained_model(model, optimizer)
-        epoch_state = EpochState(metrics = criterions)
+        epoch_state = EpochState(metrics = criterions, epochs=self.epochs)
         for epoch in range(start_epoch, self.epochs):
             for phase in ['train', 'valid']:
                 model.train() if phase == 'train' else model.eval()
@@ -62,6 +62,8 @@ class Trainer:
             
             if self.checkpointing and (epoch + 1) % self.checkpoint_interval == 0:
                 self.ckpointer.save_checkpoint(model, optimizer, epoch, epoch_state)
+
+            epoch_state.reset_state()
 
     def load_pretrained_model(self, model, optimizer):
         if self.trained_model:
