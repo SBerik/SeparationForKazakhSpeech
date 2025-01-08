@@ -2,8 +2,8 @@
 
 Before run train and inference, setup vertiual env.
 ```
-$ git clone https://github.com/SBerik/DualPathRNN.git
-$ cd ./DualPathRNN
+$ git clone https://github.com/SBerik/SeparationForKazakhSpeech.git
+$ cd ./SeparationForKazakhSpeech
 $ python3 -m venv .venv 
 ```
 For Linux (Ubuntu):
@@ -26,7 +26,7 @@ Warining: Be careful where you run the script
 
 To run `inference.py`
 ```
-$ python3 inference.py -m PATH_TO_MIXED_SAMPLE -c checkpoints/NAME_OF_YOUR_CONFIG_FILE -w weights/WEIGHT_FILE_NAME -s PATH_TO_SAVE_AUDIOS
+$ python3 inference.py -m PATH_TO_MIXED_SAMPLE.flac -c configs/NAME_OF_YOUR_CONFIG_FILE -w weights/WEIGHT_FILE_NAME -s PATH_TO_SAVE_AUDIOS
 ```
 Warning: run the file `inference.py` with the trained model weights and the config file. 
 
