@@ -9,16 +9,16 @@ def configure_optimizer(cfg, model):
 
 
 def torch_logger (writer, epoch, epoch_state):
-    writer.add_scalars('Loss', {
-        'Train': epoch_state['train']['loss'], 
-        'Validation': epoch_state['valid']['loss']
+    writer.add_scalars('loss', {
+        'train': epoch_state['train']['loss'], 
+        'validation': epoch_state['valid']['loss']
     }, epoch)
 
     if epoch_state.metrics:
         for m in epoch_state['metrics_name']:
             writer.add_scalars(f'{m}', {
-                'Train': epoch_state['train']['metrics'][m], 
-                'Validation': epoch_state['valid']['metrics'][m]
+                'train': epoch_state['train']['metrics'][m], 
+                'validation': epoch_state['valid']['metrics'][m]
             }, epoch)
 
 
