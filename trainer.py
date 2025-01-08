@@ -22,7 +22,6 @@ class Trainer:
         self.path_to_weights = path_to_weights
         self.ckpt_folder = ckpt_folder
         self.speaker_num = speaker_num
-        self.resume = resume
         self.trained_model = trained_model
         self.alpha = alpha
         self.beta = beta
