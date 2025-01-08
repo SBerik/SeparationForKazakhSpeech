@@ -6,7 +6,7 @@ xp_config:
 
 data:
   data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
-  total_percent: 0.2
+  total_percent: 0.005
   train_percent: 0.8
   valid_percent: 0.1
   test_percent: 0.1
@@ -44,8 +44,8 @@ trainer:
   ckpt_folder: ./checkpoints/
   speaker_num: 2
   resume: false
-  alpha: 0.49
-  beta: 0.51
+  alpha: 0.55
+  beta: 0.45
   
 training:
   optim: Adam   ### Adam, RMSprop, SGD
