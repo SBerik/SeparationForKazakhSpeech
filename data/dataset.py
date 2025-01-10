@@ -34,6 +34,11 @@ class Datasets(torch.utils.data.Dataset):
     def __getitem__(self, index):
         return self.mix_audio[index], [ref[index] for ref in self.ref_audio]
 
+
+# class ExtendedAudioDataset(Datasets):
+#     def __getitems__(self, item):
+#         return self.__getitem__(item) 
+
 # if __name__ == "__main__":
 #     dataset = Datasets("/",
 #                       ["", ""])

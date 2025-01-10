@@ -5,16 +5,19 @@ import sys
 sys.path.append('../')
 from typing import List, Tuple
 import os.path as ospth
+import os
 
 def get_file_name(file_path: str):
     return ospth.splitext(ospth.basename(file_path))[0]
 
 def handle_df(audios: List[Tuple[int, str]]) -> dict:
     scp_dict = dict()
-    for audio in audios:
+    for idx, audio in enumerate(audios):
         common_len, l = audio
         if len(audio) != 2:
             raise RuntimeError("Format error in")
+        if not isinstance(l, (str, bytes, os.PathLike)):
+            raise TypeError(f"Invalid type for path at index: {audios[idx-1]}, {audios[idx]}, {audios[idx+1]}")
         if len(audio) == 2:
             key, value = f"{get_file_name (l)}.flac", l
         if key in scp_dict:
