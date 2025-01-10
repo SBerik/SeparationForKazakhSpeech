@@ -1,2 +1,1 @@
-from .AudioData import *
-from .Dataset import *
+from .DiarizationDataset import DiarizationDataset

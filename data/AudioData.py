@@ -1,14 +1,13 @@
-import torch.nn.functional as F
-import torch
-import torchaudio
-import sys
-sys.path.append('../')
 from typing import List, Tuple
 import os.path as ospth
-import os
+
+import torch.nn.functional as F
+import torchaudio
+
 
 def get_file_name(file_path: str):
     return ospth.splitext(ospth.basename(file_path))[0]
+
 
 def handle_df(audios: List[Tuple[int, str]]) -> dict:
     scp_dict = dict()
@@ -16,8 +15,8 @@ def handle_df(audios: List[Tuple[int, str]]) -> dict:
         common_len, l = audio
         if len(audio) != 2:
             raise RuntimeError("Format error in")
-        if not isinstance(l, (str, bytes, os.PathLike)):
-            raise TypeError(f"Invalid type for path at index: {audios[idx-1]}, {audios[idx]}, {audios[idx+1]}")
+        if not isinstance(l, (str, bytes)):
+            raise TypeError(f"Invalid type for path at: {audios[idx-1]}, {audios[idx]}, {audios[idx+1]}")
         if len(audio) == 2:
             key, value = f"{get_file_name (l)}.flac", l
         if key in scp_dict:
@@ -26,14 +25,8 @@ def handle_df(audios: List[Tuple[int, str]]) -> dict:
         scp_dict[key] = {'common_len': common_len, 'name': value}
     return scp_dict
 
+
 def handle_scp(scp_path):
-    '''
-    Read scp file script
-    input: 
-          scp_path: .scp file's file path
-    output: 
-          scp_dict: {'key':'wave file path'}
-    '''
     scp_dict = dict()
     line = 0
     lines = open(scp_path, 'r').readlines()
@@ -48,41 +41,16 @@ def handle_scp(scp_path):
         if key in scp_dict:
             raise ValueError("Duplicated key \'{0}\' exists in {1}".format(
                 key, scp_path))
-
         scp_dict[key] = value
-
     return scp_dict
 
+
 def read_wav(fname, return_rate=False):
-    '''
-         Read wavfile using Pytorch audio
-         input:
-               fname: wav file path
-               return_rate: Whether to return the sampling rate
-         output:
-                src: output tensor of size C x L 
-                     L is the number of audio frames 
-                     C is the number of channels. 
-                sr: sample rate
-    '''
     src, sr = torchaudio.load(fname, channels_first=True)
     if return_rate:
         return src.squeeze(), sr
     else:
         return src.squeeze()
-
-
-def write_wav(fname, src, sample_rate):
-    '''
-         Write wav file
-         input:
-               fname: wav file path
-               src: frames of audio
-               sample_rate: An integer which is the sample rate of the audio
-         output:
-               None
-    '''
-    torchaudio.save(fname, src, sample_rate)
 
 
 class AudioReader(object):
@@ -96,7 +64,6 @@ class AudioReader(object):
         Output:
             split audio (list)
     '''
-
     def __init__(self, scp_path, sample_rate=8000, chunk_size=32000, least_size=16000):
         super(AudioReader, self).__init__()
         self.sample_rate = sample_rate
