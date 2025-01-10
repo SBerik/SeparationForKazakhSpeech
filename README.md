@@ -18,7 +18,7 @@ Review requirements.txt and then install it:
 ```
 $ pip install -r requirements.txt
 ```
-To run `train.py`. Before running: review the config.yml files
+To run `train.py`. Before running: review the configs.yml files
 ```
 $ python3 train.py -p ./configs/NAME_OF_YOUR_CONFIG_FILE.yml
 ```
