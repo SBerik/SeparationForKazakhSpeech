@@ -1,7 +1,7 @@
 data:
   batch_size: 1
   chunk_size: 32000
-  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_tts_tvnews=5000_k=2.csv
+  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATEDDFS_crowdsourced_tvnews_tts=100000_k=2.csv
   least_size: 16000
   num_workers: 0
   pin_memory: true
@@ -21,20 +21,21 @@ model:
   Local_B: 8
   N: 256
 trainer:
+  alpha: 0.55
   best_weights: true
+  beta: 0.45
   checkpoint_interval: 1
   checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
+  epochs: 200
   model_name: Sepformer
-  num_epochs: 200
-  path_to_weights: ./weights
-  resume: false
+  path_to_weights: ./weights/sepformer
   speaker_num: 2
   trained_model: ''
 training:
   clip_norm: 5
-  lr: 0.001
+  lr: 0.0125
   momentum: 0
   optim: Adam
   weight_decay: 1.0e-05
