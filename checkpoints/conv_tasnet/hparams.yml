@@ -1,15 +1,15 @@
 data:
-  batch_size: 2
+  batch_size: 1
   chunk_size: 32000
-  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_tts_tvnews=5000_k=2.csv
+  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATEDDFS_crowdsourced_tvnews_tts=100000_k=2.csv
   least_size: 16000
   num_workers: 0
   pin_memory: true
   sample_rate: 16000
   seed: 42
-  shuffle: true
+  shuffle: false
   test_percent: 0.1
-  total_percent: 0.05
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
 model:
@@ -25,20 +25,21 @@ model:
   norm: gln
   num_spks: 2
 trainer:
+  alpha: 0.55
   best_weights: true
+  beta: 0.45
   checkpoint_interval: 1
   checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
-  model_name: Dual_Path_RNN
-  num_epochs: 200
-  path_to_weights: ./weights
-  resume: false
+  epochs: 200
+  model_name: Conv_TasNet
+  path_to_weights: ./weights/conv_tasnet
   speaker_num: 2
   trained_model: ''
 training:
   clip_norm: 200
-  lr: 0.0003
+  lr: 0.003
   momentum: 0.9
   optim: Adam
   weight_decay: 1.0e-05
