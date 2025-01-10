@@ -11,7 +11,7 @@ from utils.load_config import load_config
 from utils.training import metadata_info, configure_optimizer
 from models import MODELS
 from trainer import Trainer
-from data.DiarizationDataset import DiarizationDataset
+from data import DiarizationDataset
 
 torch.cuda.empty_cache()
 torch.backends.cuda.matmul.allow_tf32 = True
