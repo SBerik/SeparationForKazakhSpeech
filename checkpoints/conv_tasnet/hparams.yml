@@ -1,7 +1,7 @@
 data:
   batch_size: 1
   chunk_size: 32000
-  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATEDDFS_crowdsourced_tvnews_tts=100000_k=2.csv
+  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv
   least_size: 16000
   num_workers: 0
   pin_memory: true
