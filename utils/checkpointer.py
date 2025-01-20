@@ -14,9 +14,8 @@ class Checkpointer:
             'optimizer_state_dict': optimizer.state_dict(),
             'val_loss': val_loss,
             'epoch_state': epoch_state
-        }, '{}/{}_{}_{:.4f}.pt'.format(self.path_to_weights, self.model_name, 
-                                        epoch, val_loss
-                                    ))
+        }, '{}/{}_epoch_{}_{:.4f}.pt'.format(self.path_to_weights, self.model_name, 
+                                            epoch, val_loss))
 
     def save_checkpoint(self, model, optimizer, epoch, epoch_state):
         val_loss = epoch_state['valid']['loss']
@@ -26,5 +25,6 @@ class Checkpointer:
             'optimizer_state_dict': optimizer.state_dict(),
             'val_loss': val_loss,
             'epoch_metrics': epoch_state
-        }, '{}/checkpoint_{}_epoch_{}.pt'.format(
-                                                self.checkpoint_path, self.model_name, epoch))
+        }, '{}/ckpt_{}_epoch_{}.pt'.format(self.checkpoint_path, 
+                                           self.model_name, 
+                                           epoch))
