@@ -11,12 +11,13 @@ from utils.data_processing import *
 class Separation:
     def __init__(self, cfg_path, weight_path, device = 'cpu'):
         cfg = load_config(cfg_path)
+        self.device = device
+        self.sr = cfg['data']['sample_rate']
         self.model_class = cfg['trainer']['model_name']
         model = MODELS[self.model_class]
         self.net = model(**cfg['model'])
-        self.device = device
-        self.net.to(device)
-        dicts = torch.load(weight_path, map_location=device, weights_only=False)
+        self.net.to(self.device)
+        dicts = torch.load(weight_path, map_location=self.device, weights_only=False)
         self.net.load_state_dict(dicts['model_state_dict'])
     
     def predict(self, mixed):
@@ -39,7 +40,7 @@ class Separation:
                 os.makedirs(pth_to_save + '/' + self.model_class + '/spk' + str(index+1), exist_ok=True)
                 filename = pth_to_save + '/' + self.model_class + '/spk' + str(index+1) + '/' + files_name[index] + '.flac'
                 signal = s.unsqueeze(0).cpu()
-                write_wav(filename, signal, 16000)
+                write_wav(filename, signal, self.sr)
                 print('saved in:', filename)
                 spks.append(signal)
             return spks
