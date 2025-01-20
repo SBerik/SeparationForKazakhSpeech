@@ -17,14 +17,17 @@ class Separation:
         dicts = torch.load(weight, map_location=device, weights_only=False)
         self.net.load_state_dict(dicts['model_state_dict'])
     
+    def predict(self, mixed):
+        mixed = torch.unsqueeze(mixed, 0).to(self.device)  
+        return self.net(mixed) 
+
     def separate(self, mixed_sample, file_path):
         name = get_file_name(mixed_sample)
         mixed = read_wav(mixed_sample)
         self.net.eval()
         with torch.no_grad():
             norm = torch.norm(mixed, float('inf'))
-            mixed = torch.unsqueeze(mixed, 0).to(self.device)
-            ests = self.net(mixed)
+            ests = self.predict(mixed)
             spks = [torch.squeeze(s.detach()) for s in ests]
             files_name = name.split('_')[::-1]
             for index, s in enumerate(spks):
