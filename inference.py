@@ -30,15 +30,19 @@ class Separation:
         with torch.no_grad():
             norm = torch.norm(mixed, float('inf'))
             ests = self.predict(mixed)
-            spks = [torch.squeeze(s.detach()) for s in ests]
+            ests = [torch.squeeze(s.detach()) for s in ests]
+            spks = []
             files_name = name.split('_')[::-1]
-            for index, s in enumerate(spks):
+            for index, s in enumerate(ests):
                 s = s - torch.mean(s)
                 s = s * norm / torch.max(torch.abs(s))
                 os.makedirs(file_path + '/' + self.model_type + '/spk' + str(index+1), exist_ok=True)
                 filename = file_path + '/' + self.model_type + '/spk' + str(index+1) + '/' + files_name[index] + '.flac'
-                write_wav(filename, s.unsqueeze(0).cpu(), 16000)
+                signal = s.unsqueeze(0).cpu()
+                write_wav(filename, signal, 16000)
                 print('saved in:', filename)
+                spks.append(signal)
+            return spks
 
 
 if __name__ == "__main__":
@@ -49,4 +53,4 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--save_path', type=str, default='./samples', help='save result path')
     args = parser.parse_args()
     separator = Separation(args.config, args.weight, device='cuda')
-    separator.separate(args.mixed_sample, args.save_path)
+    spks = separator.separate(args.mixed_sample, args.save_path)
