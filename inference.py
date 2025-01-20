@@ -11,9 +11,9 @@ from utils.data_processing import *
 class Separation:
     def __init__(self, cfg_path, weight_path, device = 'cpu'):
         cfg = load_config(cfg_path)
-        self.model_type = cfg['trainer']['model_name']
-        model_class = MODELS[self.model_type]
-        self.net = model_class(**cfg['model'])
+        self.model_class = cfg['trainer']['model_name']
+        model = MODELS[self.model_class]
+        self.net = model(**cfg['model'])
         self.device = device
         self.net.to(device)
         dicts = torch.load(weight_path, map_location=device, weights_only=False)
@@ -36,8 +36,8 @@ class Separation:
             for index, s in enumerate(ests):
                 s = s - torch.mean(s)
                 s = s * norm / torch.max(torch.abs(s))
-                os.makedirs(pth_to_save + '/' + self.model_type + '/spk' + str(index+1), exist_ok=True)
-                filename = pth_to_save + '/' + self.model_type + '/spk' + str(index+1) + '/' + files_name[index] + '.flac'
+                os.makedirs(pth_to_save + '/' + self.model_class + '/spk' + str(index+1), exist_ok=True)
+                filename = pth_to_save + '/' + self.model_class + '/spk' + str(index+1) + '/' + files_name[index] + '.flac'
                 signal = s.unsqueeze(0).cpu()
                 write_wav(filename, signal, 16000)
                 print('saved in:', filename)
