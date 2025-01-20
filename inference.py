@@ -11,7 +11,7 @@ from utils.data_processing import *
 class Separation:
     def __init__(self, cfg_path, weight_path, device = 'cpu'):
         cfg = load_config(cfg_path)
-        self.model_type = cfg['xp_config']['model_type']
+        self.model_type = cfg['trainer']['model_name']
         model_class = MODELS[self.model_type]
         self.net = model_class(**cfg['model'])
         self.device = device
