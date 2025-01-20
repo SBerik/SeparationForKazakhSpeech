@@ -1,5 +1,5 @@
 xp_config:
-  model_type: Sepformer
+  model_type: Separation
   dataset: ISSAI_KSC2
   speaker_num: 2
 
