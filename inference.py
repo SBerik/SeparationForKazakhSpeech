@@ -33,7 +33,7 @@ class Separation:
             ests = self.predict(mixed)
             ests = [torch.squeeze(s.detach()) for s in ests]
             spks = []
-            files_name = name.split('_')[::-1]
+            files_name = name.split("_", 1)
             for index, s in enumerate(ests):
                 s = s - torch.mean(s)
                 s = s * norm / torch.max(torch.abs(s))
