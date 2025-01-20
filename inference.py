@@ -23,7 +23,7 @@ class Separation:
         mixed = torch.unsqueeze(mixed, 0).to(self.device)  
         return self.net(mixed) 
 
-    def separate(self, mixed_sample, file_path):
+    def separate(self, mixed_sample, pth_to_save):
         name = get_file_name(mixed_sample)
         mixed = read_wav(mixed_sample)
         self.net.eval()
@@ -36,8 +36,8 @@ class Separation:
             for index, s in enumerate(ests):
                 s = s - torch.mean(s)
                 s = s * norm / torch.max(torch.abs(s))
-                os.makedirs(file_path + '/' + self.model_type + '/spk' + str(index+1), exist_ok=True)
-                filename = file_path + '/' + self.model_type + '/spk' + str(index+1) + '/' + files_name[index] + '.flac'
+                os.makedirs(pth_to_save + '/' + self.model_type + '/spk' + str(index+1), exist_ok=True)
+                filename = pth_to_save + '/' + self.model_type + '/spk' + str(index+1) + '/' + files_name[index] + '.flac'
                 signal = s.unsqueeze(0).cpu()
                 write_wav(filename, signal, 16000)
                 print('saved in:', filename)
