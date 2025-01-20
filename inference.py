@@ -7,14 +7,16 @@ from models import MODELS
 from utils.load_config import load_config 
 from utils.data_processing import *
 
+
 class Separation:
-    def __init__(self, cfg, weight, device = 'cpu'):
-        self.device = device
+    def __init__(self, cfg_path, weight_path, device = 'cpu'):
+        cfg = load_config(cfg_path)
         self.model_type = cfg['xp_config']['model_type']
         model_class = MODELS[self.model_type]
         self.net = model_class(**cfg['model'])
+        self.device = device
         self.net.to(device)
-        dicts = torch.load(weight, map_location=device, weights_only=False)
+        dicts = torch.load(weight_path, map_location=device, weights_only=False)
         self.net.load_state_dict(dicts['model_state_dict'])
     
     def predict(self, mixed):
@@ -46,6 +48,5 @@ if __name__ == "__main__":
     parser.add_argument('-w', '--weight', type=str, default='./weights/DualPath_RNN_179_-3.1895.pt', help="Path to model file.")
     parser.add_argument('-s', '--save_path', type=str, default='./samples', help='save result path')
     args = parser.parse_args()
-    cfg = load_config(args.config)
-    separator = Separation(cfg, args.weight, device='cuda')
+    separator = Separation(args.config, args.weight, device='cuda')
     separator.separate(args.mixed_sample, args.save_path)
