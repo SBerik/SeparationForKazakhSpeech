@@ -32,13 +32,13 @@ model:
   speaker_num: 2
 
 trainer:
-  epochs: 300
+  epochs: 500
   device: 'cuda'
   best_weights: true
   checkpointing: true
   checkpoint_interval: 1
   model_name: DualPath_RNN
-  trained_model: 'checkpoints/dualpathrnn/ckpt_DualPath_RNN_epoch_230.pt' # weights/Dual_Path_RNN_1_-0.1336.pt 
+  trained_model: 'checkpoints/dualpathrnn/ckpt_DualPath_RNN_epoch_299.pt' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights/dualpathrnn'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
