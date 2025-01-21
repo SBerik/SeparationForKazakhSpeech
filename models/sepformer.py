@@ -11,16 +11,11 @@ class Encoder(nn.Module):
 
     def __init__(self, L, N):
 
-        """
-            学习类似STFT的表示。
-            卷积的步幅因子对模型的性能、速度和内存有显著的影响。
-        """
-
         super(Encoder, self).__init__()
 
-        self.L = L  # 卷积核大小
+        self.L = L  
 
-        self.N = N  # 输出通道大小
+        self.N = N  
 
         self.Conv1d = nn.Conv1d(in_channels=1,
                                 out_channels=N,
@@ -213,8 +208,8 @@ class Separator(nn.Module):
         self.N = N
         self.C = C
         self.K = K
-        self.Global_B = Global_B  # 全局循环次数
-        self.Local_B = Local_B  # 局部循环次数
+        self.Global_B = Global_B  
+        self.Local_B = Local_B  
 
         self.LayerNorm = nn.LayerNorm(self.N)
         self.Linear1 = nn.Linear(in_features=self.N, out_features=self.N, bias=None)
@@ -255,9 +250,6 @@ class Separator(nn.Module):
         return out
 
     def pad_segment(self, input, segment_size):
-
-        # 输入特征: (B, N, T)
-
         batch_size, dim, seq_len = input.shape
         segment_stride = segment_size // 2
 
@@ -274,10 +266,6 @@ class Separator(nn.Module):
         return input, rest
 
     def split_feature(self, input, segment_size):
-
-        # 将特征分割成段大小的块
-        # 输入特征: (B, N, T)
-
         input, rest = self.pad_segment(input, segment_size)
         batch_size, dim, seq_len = input.shape
         segment_stride = segment_size // 2
@@ -289,10 +277,6 @@ class Separator(nn.Module):
         return segments, rest
 
     def merge_feature(self, input, rest):
-
-        # 将分段的特征合并成完整的话语
-        # 输入特征: (B, N, L, K)
-
         batch_size, dim, segment_size, _ = input.shape
         segment_stride = segment_size // 2
         input = input.transpose(2, 3).contiguous().view(batch_size, dim, -1, segment_size * 2)  # B, N, K, L
@@ -323,13 +307,13 @@ class Sepformer(nn.Module):
 
         super(Sepformer, self).__init__()
 
-        self.N = N  # 编码器输出通道
-        self.C = C  # 分离源的数量
-        self.L = L  # 编码器卷积核大小
-        self.H = H  # 注意头数量
-        self.K = K  # 分块大小
-        self.Global_B = Global_B  # 全局循环次数
-        self.Local_B = Local_B  # 局部循环次数
+        self.N = N  
+        self.C = C  
+        self.L = L  
+        self.H = H  
+        self.K = K  
+        self.Global_B = Global_B  
+        self.Local_B = Local_B  
 
         self.encoder = Encoder(self.L, self.N)
 
@@ -340,7 +324,7 @@ class Sepformer(nn.Module):
     def forward(self, x):
 
         # Encoding
-        x, rest = self.pad_signal(x)  # 补零，torch.Size([1, 1, 32006])
+        x, rest = self.pad_signal(x)  #torch.Size([1, 1, 32006])
 
         enc_out = self.encoder(x)  # [B, 1, T] -> [B, N, I]，torch.Size([1, 64, 16002])
 
@@ -365,17 +349,14 @@ class Sepformer(nn.Module):
 
     def pad_signal(self, input):
 
-        # 输入波形: (B, T) or (B, 1, T)
-        # 调整和填充
-
         if input.dim() not in [2, 3]:
             raise RuntimeError("Input can only be 2 or 3 dimensional.")
 
         if input.dim() == 2:
             input = input.unsqueeze(1)
 
-        batch_size = input.size(0)  # 每一个批次的大小
-        nsample = input.size(2)  # 单个数据的长度
+        batch_size = input.size(0) 
+        nsample = input.size(2) 
         rest = self.L - (self.L // 2 + nsample % self.L) % self.L
 
         if rest > 0:
