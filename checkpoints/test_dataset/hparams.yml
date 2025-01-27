@@ -1,0 +1,16 @@
+data:
+  batch_size: 1
+  chunk_size: 32000
+  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATEDDFS_crowdsourced_tvnews_tts=100000_k=2.csv
+  least_size: 16000
+  num_workers: 0
+  pin_memory: true
+  sample_rate: 16000
+  seed: 42
+  shuffle: false
+  test_percent: 0.1
+  total_percent: 1.0
+  train_percent: 0.8
+  valid_percent: 0.1
+trainer:
+  ckpt_folder: ./checkpoints/

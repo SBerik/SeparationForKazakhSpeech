@@ -32,11 +32,11 @@ trainer:
   checkpointing: true
   ckpt_folder: ./checkpoints/
   device: cuda
-  epochs: 500
+  epochs: 900
   model_name: DualPath_RNN
   path_to_weights: ./weights/dualpathrnn
   speaker_num: 2
-  trained_model: checkpoints/dualpathrnn/ckpt_DualPath_RNN_epoch_299.pt
+  trained_model: checkpoints/dualpathrnn/ckpt_DualPath_RNN_epoch_487.pt
 training:
   clip_norm: 5
   lr: 0.0005
