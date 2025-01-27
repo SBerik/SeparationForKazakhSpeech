@@ -6,10 +6,6 @@ __pycache__/
 tb_logs/
 tb_log_to_save/
 
-checkpoints/
+*.pt
 
 weights/
-
-parallel_runs.ipynb
-
-data_processing/parallel_runs.ipynb
