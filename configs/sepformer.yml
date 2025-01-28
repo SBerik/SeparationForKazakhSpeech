@@ -4,7 +4,7 @@ xp_config:
   speaker_num: 2
 
 data:
-  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATEDDFS_crowdsourced_tvnews_tts=100000_k=2.csv'
+  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
   total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
@@ -19,22 +19,22 @@ data:
   seed: 42
 
 model:
-  N: 256
-  C: 2
-  L: 16
-  H: 8
-  K: 250
+  N: 256 # in_channels
+  C: 2 # speakers-num
+  L: 8 # kernel-size
+  H: 8 # heads-num
+  K: 250 # chunks-size
   Global_B: 2
   Local_B: 8
 
 trainer:
-  epochs: 200
+  epochs: 900
   device: 'cuda'
   best_weights: true
   checkpointing: true
   checkpoint_interval: 1
   model_name: Sepformer
-  trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
+  trained_model: '' # checkpoints/sepformer/
   path_to_weights: './weights/sepformer'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
@@ -44,6 +44,6 @@ trainer:
 training:
   optim: Adam   ### Adam, RMSprop, SGD
   lr: 0.0125
-  weight_decay: 1.0e-05
-  momentum: 0
-  clip_norm: 5
+  weight_decay: 1.0e-2
+  # momentum: 0
+  # clip_norm: 5

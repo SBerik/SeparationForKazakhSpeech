@@ -1,12 +1,11 @@
 xp_config:
-  model_type: DualPath_RNN
+  model_type: Separation
   dataset: ISSAI_KSC2
-  use_tb_logger: false
   speaker_num: 2
 
 data:
   data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
-  total_percent: 0.005
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
   test_percent: 0.1
@@ -33,10 +32,10 @@ model:
   speaker_num: 2
 
 trainer:
-  epochs: 200
+  epochs: 900
   device: 'cuda'
-  best_weights: false
-  checkpointing: false
+  best_weights: true
+  checkpointing: true
   checkpoint_interval: 1
   model_name: DualPath_RNN
   trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
