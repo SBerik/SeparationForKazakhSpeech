@@ -1,0 +1,52 @@
+xp_config:
+  model_type: Separation
+  dataset: ISSAI_KSC2
+  speaker_num: 2
+
+data:
+  data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
+  total_percent: 1.0
+  train_percent: 0.8
+  valid_percent: 0.1
+  test_percent: 0.1
+  shuffle: false
+  num_workers: 0 
+  batch_size: 1
+  pin_memory: true
+  sample_rate: 16000
+  chunk_size: 32000
+  least_size: 16000
+  seed: 42
+
+model:
+  in_channels: 256 
+  out_channels: 64
+  kernel_size: 2 
+  norm: 'ln'
+  dropout: 0.2
+  num_layers: 2
+  H: 4 # heads-num
+  Local_B: 8
+  K: 250 
+  speaker_num: 2
+
+trainer:
+  epochs: 900
+  device: 'cuda'
+  best_weights: false
+  checkpointing: false
+  checkpoint_interval: 1
+  model_name: 'MySepfomer'
+  trained_model: '' # checkpoints/sepformer/
+  path_to_weights: './weights/mysepformer'
+  ckpt_folder: ./checkpoints/
+  speaker_num: 2
+  alpha: 0.55
+  beta: 0.45
+
+training:
+  optim: Adam   ### Adam, RMSprop, SGD
+  lr: 0.0125
+  weight_decay: 1.0e-2
+  # momentum: 0
+  # clip_norm: 5
