@@ -325,9 +325,9 @@ class Sepformer(nn.Module):
 
         # Encoding
         x, rest = self.pad_signal(x)  #torch.Size([1, 1, 32006])
-
+        
         enc_out = self.encoder(x)  # [B, 1, T] -> [B, N, I]，torch.Size([1, 64, 16002])
-
+        
         # Mask estimation
         masks = self.separator(enc_out)  # [B, N, I] -> [B*C, N, I]，torch.Size([2, 64, 16002])
 
@@ -413,9 +413,9 @@ class Sepformer(nn.Module):
 
 if __name__ == "__main__":
 
-    x = torch.rand(1, 32000)
+    x = torch.rand(1, 16001)
 
-    model = Sepformer(N=128,
+    model = Sepformer(N=256,
                       C=2,
                       L=2,
                       H=8,
