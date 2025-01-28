@@ -13,13 +13,17 @@ data:
   train_percent: 0.8
   valid_percent: 0.1
 model:
-  C: 2
-  Global_B: 2
-  H: 8
   K: 250
-  L: 8
-  Local_B: 8
-  N: 256
+  bidirectional: true
+  dropout: 0
+  hidden_channels: 128
+  in_channels: 256
+  kernel_size: 2
+  norm: ln
+  num_layers: 6
+  out_channels: 64
+  rnn_type: LSTM
+  speaker_num: 2
 trainer:
   alpha: 0.55
   best_weights: true
@@ -29,14 +33,16 @@ trainer:
   ckpt_folder: ./checkpoints/
   device: cuda
   epochs: 900
-  model_name: Sepformer
-  path_to_weights: ./weights/sepformer
+  model_name: DualPath_RNN
+  path_to_weights: ./weights/dev_dualpathrnn
   speaker_num: 2
   trained_model: ''
 training:
-  lr: 0.0125
+  clip_norm: 5
+  lr: 0.0005
+  momentum: 0
   optim: Adam
-  weight_decay: 0.01
+  weight_decay: 1.0e-05
 xp_config:
   dataset: ISSAI_KSC2
   model_type: Separation

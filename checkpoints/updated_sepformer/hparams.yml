@@ -13,24 +13,27 @@ data:
   train_percent: 0.8
   valid_percent: 0.1
 model:
-  C: 2
-  Global_B: 2
-  H: 8
+  H: 4
   K: 250
-  L: 8
   Local_B: 8
-  N: 256
+  dropout: 0.2
+  in_channels: 256
+  kernel_size: 2
+  norm: ln
+  num_layers: 2
+  out_channels: 64
+  speaker_num: 2
 trainer:
   alpha: 0.55
-  best_weights: true
+  best_weights: false
   beta: 0.45
   checkpoint_interval: 1
-  checkpointing: true
+  checkpointing: false
   ckpt_folder: ./checkpoints/
   device: cuda
   epochs: 900
-  model_name: Sepformer
-  path_to_weights: ./weights/sepformer
+  model_name: MySepfomer
+  path_to_weights: ./weights/mysepformer
   speaker_num: 2
   trained_model: ''
 training:
