@@ -9,7 +9,7 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio as 
 
 from utils.load_config import load_config 
 from utils.training import metadata_info, configure_optimizer
-from models import MODELS
+from models import get_model
 from trainer import Trainer
 from data import DiarizationDataset
 
@@ -26,14 +26,14 @@ def main(hparams_file):
     datamodule = DiarizationDataset(**cfg['data']).setup(stage = 'train')
     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
     # Load model
-    model_class = MODELS[cfg['trainer']['model_name']]
+    model_class = get_model(cfg['trainer']['model_name'])
     model = model_class(**cfg['model'])
     # Meta-data
     metadata_info(model)
     # TensorBoard
     writer = TensorBoard(f'tb_logs/{Path(hparams_file).stem}', comment = f"{cfg['trainer']['ckpt_folder']}")
     # Optimizer
-    optimizer = configure_optimizer (cfg, model)
+    optimizer = configure_optimizer(cfg, model)
     # Loss and metrics
     loss_funcs = {name: PIT(func).to(cfg['trainer']['device']) for name, func in {"sisnr": sisnr, "sdr": sdr}.items()}
     # Train
@@ -42,6 +42,6 @@ def main(hparams_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--hparams", type=str, default="./configs/dualpathrnn.yml", help="hparams config file")
+    parser.add_argument("-p", "--hparams", type=str, default="./configs/sepformer.yml", help="hparams config file")
     args = parser.parse_args()
     main(args.hparams)
