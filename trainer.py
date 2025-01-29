@@ -31,6 +31,7 @@ class Trainer:
         model.to(self.device)
         start_epoch, min_val_loss, model, optimizer = self.load_pretrained_model(model, optimizer)
         epoch_state = EpochState(metrics = criterions, epochs=self.epochs)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.5)
         for epoch in range(start_epoch, self.epochs):
             for phase in ['train', 'valid']:
                 model.train() if phase == 'train' else model.eval()
@@ -44,17 +45,21 @@ class Trainer:
                         losses = {'sisnr': - criterions['sisnr'](outputs, labels),
                                   'sdr': - criterions['sdr'](outputs, labels)}  
                         loss = self.alpha * losses['sisnr'] + self.beta * losses['sdr']
-                        optimizer.zero_grad()
-                        loss.backward()
-                        optimizer.step()
+                        if phase == 'train':
+                            optimizer.zero_grad()
+                            loss.backward()
+                            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
+                            optimizer.step()
                     epoch_state.update_loss(phase, loss)
                     epoch_state.update_metrics(phase, losses)
                 epoch_loss = epoch_state.compute_loss(phase, len(dataloader))
                 epoch_metrics = epoch_state.compute_metrics(phase, len(dataloader))
                 epoch_state.p_output(epoch, phase)
-                if phase == 'valid' and self.best_weights and epoch_loss < min_val_loss:
-                    min_val_loss = epoch_loss
-                    self.ckpointer.save_best_weight(model, optimizer, epoch, epoch_state)
+                if phase == 'valid':
+                    if self.best_weights and epoch_loss < min_val_loss:
+                        min_val_loss = epoch_loss
+                        self.ckpointer.save_best_weight(model, optimizer, epoch, epoch_state)
+                    scheduler.step(epoch_loss)
             torch_logger(writer, epoch, epoch_state)
             if self.checkpointing and (epoch + 1) % self.checkpoint_interval == 0:
                 self.ckpointer.save_checkpoint(model, optimizer, epoch, epoch_state)
