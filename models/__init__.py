@@ -10,3 +10,8 @@ MODELS = {
     "Sepformer": Sepformer,
     "MySepfomer": MySepfomer
 }
+
+
+def get_model(model_name):
+    assert model_name in ['DualPath_RNN', 'Conv_TasNet', 'Sepformer', 'MySepfomer'], 'Invalid model name'
+    return MODELS[model_name]
