@@ -36,7 +36,7 @@ trainer:
   best_weights: false
   checkpointing: false
   checkpoint_interval: 1
-  model_name: 'MySepfomer'
+  model_name: 'SuperiorSepformer' # Right Sepformer
   trained_model: '' # checkpoints/sepformer/
   path_to_weights: './weights/mysepformer'
   ckpt_folder: ./checkpoints/
@@ -46,7 +46,11 @@ trainer:
 
 training:
   optim: Adam   ### Adam, RMSprop, SGD
-  lr: !!float 1.5e-4
-  weight_decay: 1.0e-2
-  # momentum: 0
-  # clip_norm: 5
+  lr: !!float 15.0e-5
+
+clip_norm: 0
+
+scheduler:
+  min_lr: !!float 1e-8
+  patience: 2
+  factor: 0.5

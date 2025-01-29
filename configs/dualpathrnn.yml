@@ -47,7 +47,14 @@ trainer:
   
 training:
   optim: Adam   ### Adam, RMSprop, SGD
-  lr: !!float 0.0005
-  weight_decay: 1.0e-05
+  lr: !!float 1.0e-3
+  weight_decay: 0
   momentum: 0
-  clip_norm: 5
+
+scheduler:
+  min_lr: !!float 1.0e-8
+  patience: 2
+  factor: 0.5
+
+clip_norm:
+  value: 5
