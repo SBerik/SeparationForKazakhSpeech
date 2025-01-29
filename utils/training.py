@@ -3,9 +3,22 @@ from typing import List
 
 
 def configure_optimizer(cfg, model):
-    assert cfg['training']["optim"] in ['Adam', 'SGD'], "Invalid optimizer type"
-    return (torch.optim.Adam if cfg['training']["optim"] == 'Adam' else torch.optim.SGD) (model.parameters(), 
-                 lr=cfg['training']["lr"], weight_decay=cfg['training']["weight_decay"])
+    assert cfg['training']["optim"] in ['Adam'], "Invalid optimizer type"
+    model_name = cfg ['trainer']['model_name']
+    assert model_name in ['Conv_TasNet', 'DualPath_RNN', 'Sepformer', 'SuperiorSepformer'], 'Invalid model name'
+
+    if model_name == 'ConvTasNet':
+        return torch.optim.Adam(model.parameters(), 
+                                lr = cfg['training']["lr"],
+                                weight_decay=cfg['training']["weight_decay"])
+    elif model_name == 'DualPath_RNN':
+        return torch.optim.Adam(model.parameters(), 
+                                lr = cfg['training']["lr"],
+                                weight_decay=cfg['training']["weight_decay"])
+    
+    elif model_name == 'SuperiorSepformer':
+        return torch.optim.Adam(model.parameters(), lr = cfg['training']['lr'])
+
 
 
 def torch_logger (writer, epoch, epoch_state):
@@ -41,6 +54,7 @@ def metadata_info (model, dtype = 'float32') -> None:
     print(f"Trainable parametrs: {num_params}")
     print("Size of model: {:.2f} MB, in {}".format(model_size, dtype))
     print('-' * 68)
+
 
 def tensify(sample: List[torch.Tensor]) -> torch.Tensor:
     return torch.stack(sample, dim=1)
