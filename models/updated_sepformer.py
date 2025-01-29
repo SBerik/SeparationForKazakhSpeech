@@ -7,6 +7,8 @@ from torch.nn.modules.module import Module
 from .modules import Encoder, Decoder
 # from modules import Encoder, Decoder
 
+from .sepformer_block import SepFormerBlock
+# from sepformer_block import SepFormerBlock
 
 # ============================ Normalization blocks
 class GlobalLayerNorm(torch.nn.Module):
@@ -198,7 +200,6 @@ class DPTBlock(torch.nn.Module):
         # intra DPT
         row_z = z.permute(0, 3, 2, 1).contiguous().view(B*P, K, N)
         row_z1 = self.intra_PositionalEncoding(row_z)
-
         for i in range(self.Local_B):
             row_z1 = self.intra_transformer[i](row_z1.permute(1, 0, 2).contiguous()).permute(1, 0, 2).contiguous()
 
@@ -223,6 +224,8 @@ class DevSepfomer(torch.nn.Module):
     def __init__(self, in_channels, out_channels,  norm='ln', dropout=0.1, 
                 K=200, speaker_num=2, H = 8, num_layers = 2, Local_B = 8):
         super(DevSepfomer, self).__init__()
+        d_model = out_channels
+        d_ff = 1024
         self.K = K
         self.speaker_num = speaker_num
         self.norm = select_norm(norm, in_channels, 3)
@@ -232,7 +235,8 @@ class DevSepfomer(torch.nn.Module):
 
         self.sepformer = torch.nn.ModuleList([]) # changed
         for i in range(self.num_layers):
-            self.sepformer.append(DPTBlock(out_channels, H, self.Local_B, dropout))
+            self.sepformer.append(SepFormerBlock(d_intra=d_model, d_inter=d_model, d_ff_intra=d_ff, d_ff_inter=d_ff))
+            # self.sepformer.append(DPTBlock(out_channels, H, self.Local_B, dropout))
 
         self.conv2d = torch.nn.Conv2d(
             out_channels, out_channels*speaker_num, kernel_size=1)
@@ -255,12 +259,17 @@ class DevSepfomer(torch.nn.Module):
         # [B, N, L]
         x = self.norm(x)
         # [B, N, L]
-        x = self.conv1d(x)
+        # x = self.conv1d(x)
         # [B, N, K, S]
         x, gap = self._Segmentation(x, self.K)
+        # print('beform permute()', x.shape, gap)
+        x = x.permute(0, 1, 3, 2)
+        # print('after permute()', x.shape, gap)
         # [B, N*spks, K, S]
         for i in range(self.num_layers):
             x = self.sepformer[i](x)
+        x = x.permute(0, 1, 3, 2)
+        # print('end again', x.shape, gap)
         x = self.prelu(x)
         x = self.conv2d(x)
         # [B*spks, N, K, S]
@@ -392,7 +401,7 @@ if __name__ == "__main__":
     """
 
     model = MySepfomer(in_channels = 256, 
-                      out_channels = 64,   
+                      out_channels = 256,   
                       kernel_size=2,
                       norm='ln', 
                       dropout = 0, 
