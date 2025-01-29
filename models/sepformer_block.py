@@ -12,7 +12,7 @@ class SepFormerBlock(nn.Module):
         d_intra=256, d_inter=256, d_ff_intra=1024, d_ff_inter=1024,
         norm=True, dropout=0.0, nonlinear='relu',
         causal=False,
-        eps=EPS
+        eps=EPS, N = 2
     ):
         super().__init__()
 
@@ -29,6 +29,8 @@ class SepFormerBlock(nn.Module):
             eps=eps
         )
 
+        self.N = N
+
     def forward(self, input):
         """
         Args:
@@ -36,6 +38,12 @@ class SepFormerBlock(nn.Module):
         Returns:
             output (batch_size, num_features, S, chunk_size)
         """
+        
+        # for _ in range(self.N):
+        #     input = self.intra_transformer(input)
+        #     input = self.inter_transformer(input)
+        # return input
+
         x = self.intra_transformer(input)
         output = self.inter_transformer(x)
 
