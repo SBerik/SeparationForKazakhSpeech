@@ -44,10 +44,9 @@ class Trainer:
                         losses = {'sisnr': - criterions['sisnr'](outputs, labels),
                                   'sdr': - criterions['sdr'](outputs, labels)}  
                         loss = self.alpha * losses['sisnr'] + self.beta * losses['sdr']
-                        if phase == 'train':
-                            optimizer.zero_grad()
-                            loss.backward()
-                            optimizer.step()
+                        optimizer.zero_grad()
+                        loss.backward()
+                        optimizer.step()
                     epoch_state.update_loss(phase, loss)
                     epoch_state.update_metrics(phase, losses)
                 epoch_loss = epoch_state.compute_loss(phase, len(dataloader))
