@@ -10,7 +10,9 @@ from .modules import Encoder, Decoder
 from .sepformer_block import SepFormerBlock
 # from sepformer_block import SepFormerBlock
 
-# ============================ Normalization blocks
+
+# ============================ Normalization code-block
+
 class GlobalLayerNorm(torch.nn.Module):
     '''
        Calculate Global Layer Normalization
@@ -101,123 +103,6 @@ def select_norm(norm, dim, shape):
         return torch.nn.BatchNorm1d(dim)
 
 # ============================ Normalization end block
-
-
-class TransformerEncoderLayer(Module):
-
-    def __init__(self, d_model, nhead, dropout=0):
-        super(TransformerEncoderLayer, self).__init__()
-
-        self.LayerNorm1 =torch.nn.LayerNorm(normalized_shape=d_model)
-
-        self.self_attn = MultiheadAttention(d_model, nhead, dropout=dropout)
-
-        self.Dropout1 =torch.nn.Dropout(p=dropout)
-
-        self.LayerNorm2 =torch.nn.LayerNorm(normalized_shape=d_model)
-
-        self.FeedForward =torch.nn.Sequential(torch.nn.Linear(d_model, d_model*2*2),
-                                        torch.nn.ReLU(),
-                                        torch.nn.Dropout(p=dropout),
-                                        torch.nn.Linear(d_model*2*2, d_model))
-
-        self.Dropout2 =torch.nn.Dropout(p=dropout)
-
-    def forward(self, z):
-
-        z1 = self.LayerNorm1(z)
-
-        z2 = self.self_attn(z1, z1, z1, attn_mask=None, key_padding_mask=None)[0]
-
-        z3 = self.Dropout1(z2) + z
-
-        z4 = self.LayerNorm2(z3)
-
-        z5 = self.Dropout2(self.FeedForward(z4)) + z3
-
-        return z5
-
-
-class Positional_Encoding(torch.nn.Module):
-
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
-
-        super(Positional_Encoding, self).__init__()
-
-        self.dropout = torch.nn.Dropout(p=dropout)
-
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        # pe = pe.unsqueeze(0).transpose(0, 1)  # seq_len, batch, channels
-        pe = pe.transpose(0, 1).unsqueeze(0)  # batch, channels, seq_len
-
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-
-        x = x.permute(0, 2, 1).contiguous()
-
-        # x is seq_len, batch, channels
-        # x = x + self.pe[:x.size(0), :]
-
-        # x is batch, channels, seq_len
-        x = x + self.pe[:, :, :x.size(2)]
-
-        x = self.dropout(x)
-
-        x = x.permute(0, 2, 1).contiguous()
-
-        return x
-
-
-class DPTBlock(torch.nn.Module):
-
-    def __init__(self, input_size, nHead, Local_B, dropout = 0.1):
-
-        super(DPTBlock, self).__init__()
-        self.Local_B = Local_B
-        self.intra_PositionalEncoding = Positional_Encoding(d_model=input_size, max_len=32000)
-        self.intra_transformer = torch.nn.ModuleList([])
-        for i in range(self.Local_B):
-            self.intra_transformer.append(TransformerEncoderLayer(d_model=input_size,
-                                                                  nhead=nHead,
-                                                                  dropout=dropout))
-
-        self.inter_PositionalEncoding = Positional_Encoding(d_model=input_size, max_len=32000)
-        self.inter_transformer = torch.nn.ModuleList([])
-        for i in range(self.Local_B):
-            self.inter_transformer.append(TransformerEncoderLayer(d_model=input_size,
-                                                                  nhead=nHead,
-                                                                  dropout=dropout))
-
-    def forward(self, z):
-
-        B, N, K, P = z.shape
-
-        # intra DPT
-        row_z = z.permute(0, 3, 2, 1).contiguous().view(B*P, K, N)
-        row_z1 = self.intra_PositionalEncoding(row_z)
-        for i in range(self.Local_B):
-            row_z1 = self.intra_transformer[i](row_z1.permute(1, 0, 2).contiguous()).permute(1, 0, 2).contiguous()
-
-        row_f = row_z1 + row_z
-        row_output = row_f.view(B, P, K, N).permute(0, 3, 2, 1).contiguous()
-
-        # inter DPT
-        col_z = row_output.permute(0, 2, 3, 1).contiguous().view(B*K, P, N)
-        col_z1 = self.inter_PositionalEncoding(col_z)
-
-        for i in range(self.Local_B):
-            col_z1 = self.inter_transformer[i](col_z1.permute(1, 0, 2).contiguous()).permute(1, 0, 2).contiguous()
-
-        col_f = col_z1 + col_z
-        col_output = col_f.view(B, K, P, N).permute(0, 3, 1, 2).contiguous()
-
-        return col_output
-
 
 
 class DevSepfomer(torch.nn.Module):
@@ -348,10 +233,10 @@ class DevSepfomer(torch.nn.Module):
         return input
 
 
-class MySepfomer(torch.nn.Module):
+class SuperiorSepformer(torch.nn.Module):
     def __init__(self, in_channels = 256, out_channels = 64, kernel_size=2,  norm='ln', dropout=0,
                  K=200, speaker_num=2, H = 8, num_layers = 2, Local_B = 8):
-        super(MySepfomer, self).__init__()
+        super(SuperiorSepformer, self).__init__()
         self.encoder = Encoder(kernel_size=kernel_size,
                                out_channels=in_channels, 
                                bias = False)
@@ -400,7 +285,7 @@ if __name__ == "__main__":
         Local_B: 8
     """
 
-    model = MySepfomer(in_channels = 256, 
+    model = SuperiorSepformer(in_channels = 256, 
                       out_channels = 256,   
                       kernel_size=2,
                       norm='ln', 
