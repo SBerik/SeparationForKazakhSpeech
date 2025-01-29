@@ -26,10 +26,10 @@ model:
   speaker_num: 2
 trainer:
   alpha: 0.55
-  best_weights: true
+  best_weights: false
   beta: 0.45
   checkpoint_interval: 1
-  checkpointing: true
+  checkpointing: false
   ckpt_folder: ./checkpoints/
   device: cuda
   epochs: 900

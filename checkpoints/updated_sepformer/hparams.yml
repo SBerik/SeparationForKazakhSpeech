@@ -13,15 +13,15 @@ data:
   train_percent: 0.8
   valid_percent: 0.1
 model:
-  H: 4
+  H: 8
   K: 250
   Local_B: 8
-  dropout: 0.2
+  dropout: 0.0
   in_channels: 256
-  kernel_size: 2
+  kernel_size: 16
   norm: ln
   num_layers: 2
-  out_channels: 64
+  out_channels: 256
   speaker_num: 2
 trainer:
   alpha: 0.55
@@ -37,7 +37,7 @@ trainer:
   speaker_num: 2
   trained_model: ''
 training:
-  lr: 0.0125
+  lr: 0.00015
   optim: Adam
   weight_decay: 0.01
 xp_config:

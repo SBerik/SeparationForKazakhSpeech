@@ -20,12 +20,12 @@ data:
 
 model:
   in_channels: 256 
-  out_channels: 64
-  kernel_size: 2 
+  out_channels: 256
+  kernel_size: 16
   norm: 'ln'
-  dropout: 0.2
+  dropout: 0.0
   num_layers: 2
-  H: 4 # heads-num
+  H: 8 # heads-num
   Local_B: 8
   K: 250 
   speaker_num: 2
@@ -46,7 +46,7 @@ trainer:
 
 training:
   optim: Adam   ### Adam, RMSprop, SGD
-  lr: 0.0125
+  lr: !!float 1.5e-4
   weight_decay: 1.0e-2
   # momentum: 0
   # clip_norm: 5
