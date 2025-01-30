@@ -38,10 +38,9 @@ class SepFormerBlock(nn.Module):
         Returns:
             output (batch_size, num_features, S, chunk_size)
         """
-        for _ in range(self.N):
-            input = self.intra_transformer(input)
-            input = self.inter_transformer(input)
-        return input
+        x = self.intra_transformer(input)
+        output = self.inter_transformer(x)
+        return output
 
 class PositionalEncoding(nn.Module):
     def __init__(self, num_features, dropout=0, max_len=5000, base=10000, batch_first=False):
