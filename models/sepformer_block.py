@@ -38,16 +38,10 @@ class SepFormerBlock(nn.Module):
         Returns:
             output (batch_size, num_features, S, chunk_size)
         """
-        
-        # for _ in range(self.N):
-        #     input = self.intra_transformer(input)
-        #     input = self.inter_transformer(input)
-        # return input
-
-        x = self.intra_transformer(input)
-        output = self.inter_transformer(x)
-
-        return output
+        for _ in range(self.N):
+            input = self.intra_transformer(input)
+            input = self.inter_transformer(input)
+        return input
 
 class PositionalEncoding(nn.Module):
     def __init__(self, num_features, dropout=0, max_len=5000, base=10000, batch_first=False):
@@ -105,7 +99,8 @@ class IntraTransformer(nn.Module):
             layer_norm = LayerNormWrapper(norm_name, num_features, causal=False, batch_first=False, eps=eps)
 
         self.positional_encoding = PositionalEncoding(num_features, batch_first=False)
-        encoder_layer = nn.TransformerEncoderLayer(num_features, num_heads, d_ff, dropout=dropout, activation=nonlinear, layer_norm_eps=eps, batch_first=False, norm_first=norm_first)
+        encoder_layer = nn.TransformerEncoderLayer(num_features, num_heads, d_ff, dropout=dropout, activation=nonlinear, layer_norm_eps=eps, 
+                                                   batch_first=False, norm_first=norm_first)
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers, norm=layer_norm)
 
     def forward(self, input):
@@ -149,7 +144,8 @@ class InterTransformer(nn.Module):
             layer_norm = LayerNormWrapper(norm_name, num_features, causal=False, batch_first=False, eps=eps)
 
         self.positional_encoding = PositionalEncoding(num_features, batch_first=False)
-        encoder_layer = nn.TransformerEncoderLayer(num_features, num_heads, d_ff, dropout=dropout, activation=nonlinear, layer_norm_eps=eps, batch_first=False, norm_first=norm_first)
+        encoder_layer = nn.TransformerEncoderLayer(num_features, num_heads, d_ff, dropout=dropout, activation=nonlinear, layer_norm_eps=eps, 
+                                                   batch_first=False, norm_first=norm_first)
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers, norm=layer_norm)
 
     def forward(self, input):
