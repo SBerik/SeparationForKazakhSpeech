@@ -15,8 +15,9 @@ def configure_optimizer(cfg, model):
         return torch.optim.Adam(model.parameters(), 
                                 lr = cfg['training']["lr"],
                                 weight_decay=cfg['training']["weight_decay"])
-    
     elif model_name == 'SuperiorSepformer':
+        return torch.optim.Adam(model.parameters(), lr = cfg['training']['lr'])
+    else:
         return torch.optim.Adam(model.parameters(), lr = cfg['training']['lr'])
 
 
