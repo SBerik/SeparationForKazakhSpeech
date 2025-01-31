@@ -1,3 +1,4 @@
+clip_norm: 0
 data:
   batch_size: 1
   chunk_size: 32000
@@ -13,13 +14,25 @@ data:
   train_percent: 0.8
   valid_percent: 0.1
 model:
-  C: 2
-  Global_B: 2
-  H: 8
   K: 250
-  L: 8
-  Local_B: 8
-  N: 256
+  d_ff_inter: 1024
+  d_ff_intra: 1024
+  d_inter: 256
+  d_intra: 256
+  dropout: 0.0
+  encoder_type_norm: ln
+  kernel_size: 16
+  num_heads_inter: 8
+  num_heads_intra: 8
+  num_layers: 2
+  num_layers_inter: 8
+  num_layers_intra: 8
+  out_channels: 256
+  speaker_num: 2
+scheduler:
+  factor: 0.5
+  min_lr: 1.0e-08
+  patience: 2
 trainer:
   alpha: 0.55
   best_weights: true
@@ -29,12 +42,12 @@ trainer:
   ckpt_folder: ./checkpoints/
   device: cuda
   epochs: 900
-  model_name: Sepformer
-  path_to_weights: ./weights/sepformer
+  model_name: SuperiorSepformer
+  path_to_weights: ./weights/superiorsepformer
   speaker_num: 2
   trained_model: ''
 training:
-  lr: 0.00015
+  lr: 1.5
   optim: Adam
 xp_config:
   dataset: ISSAI_KSC2
