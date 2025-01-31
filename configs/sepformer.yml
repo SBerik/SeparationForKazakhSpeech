@@ -28,10 +28,10 @@ model:
   Local_B: 8
 
 trainer:
-  epochs: 900
+  epochs: 100
   device: 'cuda'
-  best_weights: true
-  checkpointing: true
+  best_weights: false
+  checkpointing: false
   checkpoint_interval: 1
   model_name: Sepformer
   trained_model: '' # checkpoints/sepformer/

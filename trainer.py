@@ -31,7 +31,7 @@ class Trainer:
         model.to(self.device)
         start_epoch, min_val_loss, model, optimizer = self.load_pretrained_model(model, optimizer)
         epoch_state = EpochState(metrics = criterions, epochs=self.epochs)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.5)
+        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.5)
         for epoch in range(start_epoch, self.epochs):
             for phase in ['train', 'valid']:
                 model.train() if phase == 'train' else model.eval()
@@ -59,7 +59,7 @@ class Trainer:
                     if self.best_weights and epoch_loss < min_val_loss:
                         min_val_loss = epoch_loss
                         self.ckpointer.save_best_weight(model, optimizer, epoch, epoch_state)
-                    scheduler.step(epoch_loss)
+                    # scheduler.step(epoch_loss)
             torch_logger(writer, epoch, epoch_state)
             if self.checkpointing and (epoch + 1) % self.checkpoint_interval == 0:
                 self.ckpointer.save_checkpoint(model, optimizer, epoch, epoch_state)
