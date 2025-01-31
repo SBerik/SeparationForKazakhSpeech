@@ -10,7 +10,7 @@ from utils.training import *
 class Trainer:
     def __init__(self, epochs = 100, device='cuda', best_weights = False, checkpointing = False, 
                  checkpoint_interval = 10, model_name = '', trained_model = './', path_to_weights= './weights', 
-                 ckpt_folder = '', speaker_num = 2, resume = False, alpha = 0.5, beta = 0.5) -> None:
+                 ckpt_folder = '', speaker_num = 2,  alpha = 0.5, beta = 0.5) -> None:
         self.epochs = epochs
         self.device = device
         self.best_weights = best_weights
