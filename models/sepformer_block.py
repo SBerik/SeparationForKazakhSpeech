@@ -4,16 +4,15 @@ import torch
 
 EPS = 1e-12
 
+
 class SepFormerBlock(nn.Module):
-    def __init__(
-        self,
+    def __init__(self,
         num_layers_intra=8, num_layers_inter=8,
         num_heads_intra=8, num_heads_inter=8,
         d_intra=256, d_inter=256, d_ff_intra=1024, d_ff_inter=1024,
-        norm=True, dropout=0.0, nonlinear='relu',
-        causal=False,
-        eps=EPS, N = 2
-    ):
+        dropout=0.0, norm=True, nonlinear='relu',
+        causal=False, eps=EPS
+        ):
         super().__init__()
 
         self.intra_transformer = IntraTransformer(
@@ -28,8 +27,6 @@ class SepFormerBlock(nn.Module):
             norm=norm, dropout=dropout, nonlinear=nonlinear, causal=causal,
             eps=eps
         )
-
-        self.N = N
 
     def forward(self, input):
         """
