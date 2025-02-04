@@ -1,3 +1,5 @@
+clip_norm:
+  value: 5
 data:
   batch_size: 1
   chunk_size: 32000
@@ -9,7 +11,7 @@ data:
   seed: 42
   shuffle: false
   test_percent: 0.1
-  total_percent: 1.0
+  total_percent: 0.02
   train_percent: 0.8
   valid_percent: 0.1
 model:
@@ -24,6 +26,10 @@ model:
   out_channels: 64
   rnn_type: LSTM
   speaker_num: 2
+scheduler:
+  factor: 0.5
+  min_lr: 1.0e-08
+  patience: 2
 trainer:
   alpha: 0.55
   best_weights: false
@@ -38,11 +44,10 @@ trainer:
   speaker_num: 2
   trained_model: ''
 training:
-  clip_norm: 5
   lr: 0.0005
   momentum: 0
   optim: Adam
-  weight_decay: 1.0e-05
+  weight_decay: 0
 xp_config:
   dataset: ISSAI_KSC2
   model_type: Separation

@@ -10,24 +10,24 @@ data:
   seed: 42
   shuffle: false
   test_percent: 0.1
-  total_percent: 1.0
+  total_percent: 0.02
   train_percent: 0.8
   valid_percent: 0.1
 model:
   K: 250
   d_ff_inter: 1024
   d_ff_intra: 1024
-  d_inter: 256
-  d_intra: 256
+  d_inter: 512
+  d_intra: 512
   dropout: 0.0
   encoder_type_norm: ln
-  kernel_size: 16
+  kernel_size: 8
   num_heads_inter: 8
   num_heads_intra: 8
   num_layers: 2
   num_layers_inter: 8
   num_layers_intra: 8
-  out_channels: 256
+  out_channels: 512
   speaker_num: 2
 scheduler:
   factor: 0.5
@@ -35,10 +35,10 @@ scheduler:
   patience: 2
 trainer:
   alpha: 0.55
-  best_weights: true
+  best_weights: false
   beta: 0.45
   checkpoint_interval: 1
-  checkpointing: true
+  checkpointing: false
   ckpt_folder: ./checkpoints/
   device: cuda
   epochs: 900
