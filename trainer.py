@@ -48,7 +48,7 @@ class Trainer:
                         if phase == 'train':
                             optimizer.zero_grad()
                             loss.backward()
-                            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
+                            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
                             optimizer.step()
                     epoch_state.update_loss(phase, loss)
                     epoch_state.update_metrics(phase, losses)
