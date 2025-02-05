@@ -6,7 +6,7 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio as 
 
 from .modules import Encoder, Decoder
 from .dualpathrnn import Dual_Path_RNN
-from utils.training import * 
+from utils.training import tensify
 
 
 class PL_Dual_RNN_model(pl.LightningModule):
