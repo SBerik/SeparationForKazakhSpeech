@@ -1,5 +1,6 @@
 import math
 import random
+from typing import Optional
 
 import torch as th
 import numpy as np
