@@ -15,7 +15,7 @@ class PL_Dual_RNN_model(pl.LightningModule):
     def __init__(self, in_channels, out_channels, hidden_channels,
                  kernel_size=2, rnn_type='LSTM', norm='ln', dropout=0,
                  bidirectional=False, num_layers=4, K=200, speaker_num=2,
-                 alpha=0.5, beta=0.5, lr=1e-3):
+                 optim_params = None, scheduler = None, clip_norm = None, training = None):
         super(PL_Dual_RNN_model, self).__init__()
         self.encoder = Encoder(kernel_size=kernel_size, out_channels=in_channels, bias=False)
         self.separation = Dual_Path_RNN(in_channels, out_channels, hidden_channels,
@@ -25,11 +25,12 @@ class PL_Dual_RNN_model(pl.LightningModule):
         self.decoder = Decoder(in_channels=in_channels, out_channels=1, 
                                kernel_size=kernel_size, stride=kernel_size // 2, bias=False)
         self.speaker_num = speaker_num
-        # это не параметры модели поэтому не добавляем в .yml файл
-        self.alpha = alpha
-        self.beta = beta
         self.sisnr_criterion = PIT(sisnr)
-        self.sdr_criterion = PIT(sdr)
+        self.sdr_criterion = PIT(sdr) 
+        self.alpha, self.beta = (training['alpha'], training['beta']) if training is not None else (0.5, 0.5)
+        self.optim_params = optim_params
+        self.scheduler = scheduler
+        self.clip_norm = clip_norm
 
     def forward(self, x):
         # x: [B, L]
@@ -39,43 +40,64 @@ class PL_Dual_RNN_model(pl.LightningModule):
         audio = [self.decoder(out[i]) for i in range(self.speaker_num)]
         return audio
 
-    def epoch_step(self, batch, batch_idx):
+    def epoch_step(self, batch):
         inputs, labels = batch
         outputs = self(inputs)
         labels, outputs = tensify(labels), tensify(outputs) if not isinstance(outputs, torch.Tensor) else outputs
         sisnr_loss = -self.sisnr_criterion(outputs, labels)
         sdr_loss = -self.sdr_criterion(outputs, labels)
         loss = self.alpha * sisnr_loss + self.beta * sdr_loss
-        losses = {'sisnr': sisnr_loss, 'sdr': sdr_loss, 'loss': loss}
-        return losses
+        return {'sisnr': sisnr_loss, 'sdr': sdr_loss, 'loss': loss}
 
     def log_losses(self, losses, mode='train'):
         for loss_name, loss_value in losses.items():
-            self.log(f'{mode}_{loss_name}', loss_value, on_step=True, on_epoch=True, prog_bar=True)
+            if loss_name == 'loss':
+                self.log(f"{mode}_loss", loss_value, on_epoch=True, prog_bar=True, logger=True)
+            else:
+                self.log(f'{mode}_{loss_name}', loss_value, on_epoch=True, logger=True)
 
     def training_step(self, batch, batch_idx):
-        losses = self.epoch_step(batch, batch_idx)
+        losses = self.epoch_step(batch)
         self.log_losses(losses, mode="train")
         return losses['loss']
-
+    
     def validation_step(self, batch, batch_idx):
-        losses = self.epoch_step(batch, batch_idx)
+        losses = self.epoch_step(batch)
         self.log_losses(losses, mode="val")
-        return losses['loss']
+        return losses['loss'] 
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        type = self.optim_params["type"]
+        assert type in ['Adam', 'SGD'], "Invalid optimizer type"
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.optim_params[type]['lr'])
+
         # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", patience=3, factor=0.5)
-        if self.trained_model and os.path.exists(self.trained_model):
-            print(f"Loading pretrained model: {self.trained_model}", '\n')
-            checkpoint = torch.load(self.trained_model, map_location=self.device)
-            optimizer.load_state_dict(checkpoint["optimizer"])
+        # if self.trained_model and os.path.exists(self.trained_model):
+        #     print(f"Loading pretrained model: {self.trained_model}", '\n')
+        #     checkpoint = torch.load(self.trained_model, map_location=self.device)
+        #     optimizer.load_state_dict(checkpoint["optimizer"])
             # scheduler.load_state_dict(checkpoint["lr_scheduler"])
+        
         return {
             "optimizer": optimizer,
             "monitor": "val_loss"  # Параметр monitor теперь на том же уровне
         }
+    
+    # To Do
+    # For testing on test dataset ;xd
+    # def test_step(self, batch, batch_idx):
+        # pass 
+    # def on_test_start(self):
+    #     pass
+    # def on_test_end(self):
+    #     pass
+
+    # For inference 
+    # def predict_step(batch, batch_idx):
+        # pass
 
 
 if __name__ == '__main__':
-    model = model_class(**cfg['model'])
+    rnn = PL_Dual_RNN_model(256, 64, 128, bidirectional=True, norm='ln', num_layers=6)
+    x = torch.ones(1, 100)
+    out = rnn.forward(x)
