@@ -4,12 +4,13 @@ import random
 import torch as th
 import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
 
 from data.Dataset import Datasets
 from utils.measure_time import measure_time 
 
 
-class DiarizationDataset:
+class DiarizationDataset(pl.LightningDataModule):
     def __init__(self, data_root = './', total_percent = 1.0, train_percent = 0.75, valid_percent = 0.15, test_percent = 0.0, 
                  shuffle=False, num_workers=0, batch_size=1, pin_memory = False, 
                  sample_rate=8000, chunk_size=32000, least_size=16000, seed = 42):
@@ -37,29 +38,23 @@ class DiarizationDataset:
         self.test_df = full_data_df.iloc[train_size + val_size:]
         
     @measure_time
-    def setup(self, stage = 'train'):
-        assert stage in ['train', 'eval'], "Invalid stage" 
-        if stage == 'train': 
+    def setup(self, stage: Optional[str] = None):
+        if stage in (None, "fit"):
             self.train_dataset = Datasets(self.train_df,
                                         sample_rate = self.sample_rate,
                                         chunk_size = self.chunk_size,
                                         least_size = self.least_size)
-            print(f"Size of training set: {len(self.train_dataset)}")
-            
             self.val_dataset = Datasets(self.val_df, 
                                         sample_rate = self.sample_rate,
                                         chunk_size = self.chunk_size,
                                         least_size = self.least_size)
-            print(f"Size of validation set: {len(self.val_dataset)}")
-        else:
+        if stage in (None, "test"):
             self.test_dataset = Datasets(self.test_df,
-                                        sample_rate = self.sample_rate,
-                                        chunk_size = self.chunk_size,
-                                        least_size = self.least_size)
+                                         sample_rate = self.sample_rate,
+                                         chunk_size = self.chunk_size,
+                                         least_size = self.least_size)
             print(f"Size of test set: {len(self.test_dataset)}")
-        
-        return self # warning! 
-        
+                    
     def train_dataloader(self):
         return th.utils.data.DataLoader(self.train_dataset,
                                     batch_size = self.batch_size,
