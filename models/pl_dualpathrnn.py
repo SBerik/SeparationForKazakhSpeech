@@ -14,8 +14,8 @@ from utils.training import *
 class PL_Dual_RNN_model(pl.LightningModule):
     def __init__(self, in_channels, out_channels, hidden_channels,
                  kernel_size=2, rnn_type='LSTM', norm='ln', dropout=0,
-                 bidirectional=False, num_layers=4, K=200, speaker_num=2,
-                 optim_params = None, scheduler = None, clip_norm = None, training = None):
+                 bidirectional=False, num_layers=4, K=200, speaker_num=2000,
+                 optim_params = None, scheduler = None, clip_norm = None, training = None):  # To do - исправить None
         super(PL_Dual_RNN_model, self).__init__()
         self.encoder = Encoder(kernel_size=kernel_size, out_channels=in_channels, bias=False)
         self.separation = Dual_Path_RNN(in_channels, out_channels, hidden_channels,
@@ -67,9 +67,9 @@ class PL_Dual_RNN_model(pl.LightningModule):
         return losses['loss'] 
 
     def configure_optimizers(self):
-        type = self.optim_params["type"]
-        assert type in ['Adam', 'SGD'], "Invalid optimizer type"
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.optim_params[type]['lr'])
+        optim_type = self.optim_params["type"]
+        assert optim_type in ['Adam', 'SGD'], "Invalid optimizer type"
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.optim_params[optim_type]['lr'])
 
         # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", patience=3, factor=0.5)
         # if self.trained_model and os.path.exists(self.trained_model):
@@ -77,12 +77,16 @@ class PL_Dual_RNN_model(pl.LightningModule):
         #     checkpoint = torch.load(self.trained_model, map_location=self.device)
         #     optimizer.load_state_dict(checkpoint["optimizer"])
             # scheduler.load_state_dict(checkpoint["lr_scheduler"])
-        
-        return {
-            "optimizer": optimizer,
-            "monitor": "val_loss"  # Параметр monitor теперь на том же уровне
-        }
+
+        return optimizer
+
+        # This method is needed to track loss for ReduceLROnPlateau or ClipNorm
+        # return {
+        #     "optimizer": optimizer,
+        #     "monitor": "val_loss"  # Параметр monitor теперь на том же уровне
+        # }
     
+
     # To Do
     # For testing on test dataset ;xd
     # def test_step(self, batch, batch_idx):
