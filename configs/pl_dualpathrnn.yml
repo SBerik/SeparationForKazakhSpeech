@@ -1,11 +1,12 @@
 xp_config:
   model_type: Separation
+  model_name: &model_name PL_Dual_RNN_model
   dataset: ISSAI_KSC2
-  speaker_num: 2
-
+  speaker_num: &speaker_num 2
+  
 data:
   data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
-  total_percent: 0.02
+  total_percent: 1.0
   train_percent: 0.8
   valid_percent: 0.1
   test_percent: 0.1
@@ -50,20 +51,47 @@ model:
   bidirectional: true
   num_layers: 6
   K: 250
-  speaker_num: 2
+  speaker_num: *speaker_num
   training: *training
   optim_params: *optim
   scheduler: *scheduler
   clip_norm: *clip_norm  
 
-trainer: 
-  epochs: 900
-  device: 'cuda'
-  best_weights: false
-  checkpointing: false
-  checkpoint_interval: 1
-  model_name: Pl_dualpathrnn
-  trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
-  path_to_weights: './weights/dev_dualpathrnn'
-  ckpt_folder: ./checkpoints/
-  speaker_num: 2
+trainer:
+  accelerator: gpu
+  devices: 1
+  num_nodes: 1 
+  fast_dev_run: false 
+  precision: 32
+  accumulate_grad_batches: 1
+  profiler: simple
+  val_check_interval: 1.0
+  check_val_every_n_epoch: 1
+  max_epochs: -1
+  gradient_clip_val: 5
+  detect_anomaly: false
+  enable_model_summary: true # nn info
+  deterministic: false
+  benchmark: true
+
+model_ckpt:
+  monitor: val_loss
+  filename: '{epoch:02d}'
+  save_last: true
+
+tb_logger:
+  name: *model_name
+
+early_stop:
+  mode: min 
+  patience: 8
+
+# inferece
+# barebones: true # enable all features that may impact raw speed are disabled 
+# inferece_mode: true # inference mode
+
+#test model
+# fast_dev_run: false
+# overfit_batches: 100 or 100.0 (batches num and %) of dataset:
+
+
