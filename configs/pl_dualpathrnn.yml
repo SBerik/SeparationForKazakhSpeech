@@ -18,6 +18,27 @@ data:
   least_size: 16000
   seed: 42
 
+optim: &optim
+  type: Adam  # default 
+  Adam: 
+    lr: !!float 0.0005
+    weight_decay: 1.0e-05  
+  SGD:
+    lr: 0.0005  
+    momentum: 0.9
+
+scheduler: &scheduler
+  min_lr: !!float 1.0e-8
+  patience: 2
+  factor: 0.5
+
+clip_norm: &clip_norm
+  max_norm: 5
+
+training: &training
+  alpha: 0.55
+  beta: 0.45
+
 model:
   in_channels: 256
   out_channels: 64 
@@ -30,31 +51,19 @@ model:
   num_layers: 6
   K: 250
   speaker_num: 2
+  training: *training
+  optim_params: *optim
+  scheduler: *scheduler
+  clip_norm: *clip_norm  
 
-trainer:
+trainer: 
   epochs: 900
   device: 'cuda'
   best_weights: false
   checkpointing: false
   checkpoint_interval: 1
-  model_name: DualPath_RNN
+  model_name: Pl_dualpathrnn
   trained_model: '' # weights/Dual_Path_RNN_1_-0.1336.pt 
   path_to_weights: './weights/dev_dualpathrnn'
   ckpt_folder: ./checkpoints/
   speaker_num: 2
-  alpha: 0.55
-  beta: 0.45
-  
-training:
-  optim: Adam   ### Adam, RMSprop, SGD
-  lr: !!float 0.0005
-  weight_decay: 0
-  momentum: 0
-
-scheduler:
-  min_lr: !!float 1.0e-8
-  patience: 2
-  factor: 0.5
-
-clip_norm:
-  value: 5
