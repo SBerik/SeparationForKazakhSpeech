@@ -1,5 +1,3 @@
-import os
-
 import torch
 import pytorch_lightning as pl
 from torchmetrics.audio import PermutationInvariantTraining as PIT
