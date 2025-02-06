@@ -1,15 +1,15 @@
-import torch
-import pytorch_lightning as pl
+import torch as th
+import lightning as L
 from torchmetrics.audio import PermutationInvariantTraining as PIT
 from torchmetrics.functional.audio import signal_distortion_ratio as sdr
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio as sisnr
 
 from .modules import Encoder, Decoder
 from .dualpathrnn import Dual_Path_RNN
-from utils.training import tensify
+from utils import tensify
 
 
-class PL_Dual_RNN_model(pl.LightningModule):
+class PL_Dual_RNN_model(L.LightningModule):
     def __init__(self, in_channels, out_channels, hidden_channels,
                  kernel_size=2, rnn_type='LSTM', norm='ln', dropout=0,
                  bidirectional=False, num_layers=4, K=200, speaker_num=2000,
@@ -41,7 +41,7 @@ class PL_Dual_RNN_model(pl.LightningModule):
     def epoch_step(self, batch):
         inputs, labels = batch
         outputs = self(inputs)
-        labels, outputs = tensify(labels), tensify(outputs) if not isinstance(outputs, torch.Tensor) else outputs
+        labels, outputs = tensify(labels), tensify(outputs) if not isinstance(outputs, th.Tensor) else outputs
         sisnr_loss = -self.sisnr_criterion(outputs, labels)
         sdr_loss = -self.sdr_criterion(outputs, labels)
         loss = self.alpha * sisnr_loss + self.beta * sdr_loss
@@ -67,12 +67,12 @@ class PL_Dual_RNN_model(pl.LightningModule):
     def configure_optimizers(self):
         optim_type = self.optim_params["type"]
         assert optim_type in ['Adam', 'SGD'], "Invalid optimizer type"
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.optim_params[optim_type]['lr'])
+        optimizer = th.optim.Adam(self.parameters(), lr=self.optim_params[optim_type]['lr'])
 
-        # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", patience=3, factor=0.5)
+        # scheduler = th.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", patience=3, factor=0.5)
         # if self.trained_model and os.path.exists(self.trained_model):
         #     print(f"Loading pretrained model: {self.trained_model}", '\n')
-        #     checkpoint = torch.load(self.trained_model, map_location=self.device)
+        #     checkpoint = th.load(self.trained_model, map_location=self.device)
         #     optimizer.load_state_dict(checkpoint["optimizer"])
             # scheduler.load_state_dict(checkpoint["lr_scheduler"])
 
@@ -101,5 +101,5 @@ class PL_Dual_RNN_model(pl.LightningModule):
 
 if __name__ == '__main__':
     rnn = PL_Dual_RNN_model(256, 64, 128, bidirectional=True, norm='ln', num_layers=6)
-    x = torch.ones(1, 100)
+    x = th.ones(1, 100)
     out = rnn.forward(x)
