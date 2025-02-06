@@ -6,7 +6,6 @@ import torch
 import lightning.pytorch as pl
 from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from lightning.pytorch.loggers import TensorBoardLogger
-from lightning.pytorch import seed_everything
 
 from utils import load_config_yml 
 from models import get_model
@@ -22,8 +21,8 @@ def main(hparams_file):
     # Loading config file
     cfg_name = Path(hparams_file).stem
     cfg = load_config_yml(hparams_file, cfg_name)
-    # Seeds 
-    seed_everything(42)
+    # Seed
+    pl.seed_everything(42)
     # Load data 
     datamodule = DiarizationDataset(**cfg['data'])
     # Load model
