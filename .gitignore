@@ -7,5 +7,6 @@ tb_logs/
 tb_log_to_save/
 
 *.pt
+*.ckpt
 
 weights/
