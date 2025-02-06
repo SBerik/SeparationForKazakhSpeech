@@ -3,18 +3,22 @@ import random
 from typing import Optional
 
 import torch as th
+import lightning as L
 import numpy as np
 import pandas as pd
-import pytorch_lightning as pl
 
-from data.Dataset import Datasets
-from utils.measure_time import measure_time 
+from .Dataset import Datasets
+from utils import measure_time 
+
+import warnings # for windows users
+warnings.filterwarnings("ignore", ".*Consider increasing the value of the `num_workers` argument*")
 
 
-class DiarizationDataset(pl.LightningDataModule):
+class DiarizationDataset(L.LightningDataModule):
     def __init__(self, data_root = './', total_percent = 1.0, train_percent = 0.75, valid_percent = 0.15, test_percent = 0.0, 
                  shuffle=False, num_workers=0, batch_size=1, pin_memory = False, 
                  sample_rate=8000, chunk_size=32000, least_size=16000, seed = 42):
+        super(DiarizationDataset, self).__init__()
         self.shuffle = shuffle
         self.num_workers = num_workers
         self.batch_size = batch_size
@@ -38,7 +42,7 @@ class DiarizationDataset(pl.LightningDataModule):
         self.val_df = full_data_df.iloc[train_size:train_size + val_size] 
         self.test_df = full_data_df.iloc[train_size + val_size:]
         
-    @measure_time
+    @measure_time    
     def setup(self, stage: Optional[str] = None):
         if stage in (None, "fit"):
             self.train_dataset = Datasets(self.train_df,

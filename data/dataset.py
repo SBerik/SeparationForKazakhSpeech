@@ -1,6 +1,6 @@
 import torch
 
-from data.AudioData import AudioReader
+from .AudioData import AudioReader
 
 
 class Datasets(torch.utils.data.Dataset):

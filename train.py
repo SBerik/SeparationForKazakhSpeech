@@ -23,7 +23,8 @@ def main(hparams_file):
     # Loading config file    
     cfg = load_config(hparams_file)
     # Load data 
-    datamodule = DiarizationDataset(**cfg['data']).setup(stage = 'train')
+    datamodule = DiarizationDataset(**cfg['data'])
+    datamodule.setup(stage = 'fit')
     dataloaders = {'train': datamodule.train_dataloader(), 'valid': datamodule.val_dataloader()}
     # Load model
     model_class = get_model(cfg['trainer']['model_name'])
