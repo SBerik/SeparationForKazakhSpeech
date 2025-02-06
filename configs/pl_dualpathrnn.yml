@@ -6,7 +6,7 @@ xp_config:
   
 data:
   data_root: 'F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv'
-  total_percent: 1.0
+  total_percent: 0.02
   train_percent: 0.8
   valid_percent: 0.1
   test_percent: 0.1
@@ -65,7 +65,6 @@ trainer:
   precision: 32
   accumulate_grad_batches: 1
   profiler: simple
-  val_check_interval: 1.0
   check_val_every_n_epoch: 1
   max_epochs: -1
   gradient_clip_val: 5
@@ -78,9 +77,6 @@ model_ckpt:
   monitor: val_loss
   filename: '{epoch:02d}'
   save_last: true
-
-tb_logger:
-  name: *model_name
 
 early_stop:
   mode: min 
