@@ -33,12 +33,12 @@ def main(hparams_file):
     # Callbacks
     early_stop_callback = EarlyStopping(monitor='val_loss', **cfg['early_stop'])
     checkpoint_callback = ModelCheckpoint(dirpath=os.path.join('checkpoints', cfg_name), **cfg['model_ckpt'])
-    # Train
+    # Trainer
     trainer = pl.Trainer(**cfg['trainer'],
                         logger=logger,
                         enable_checkpointing=checkpoint_callback,
                         callbacks=[checkpoint_callback, early_stop_callback])
-    # # Train
+    # Train
     trainer.fit(model=model, datamodule=datamodule)
 
 
