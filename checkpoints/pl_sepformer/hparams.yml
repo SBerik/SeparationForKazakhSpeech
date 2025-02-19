@@ -1,0 +1,77 @@
+clip_norm: &id001
+  max_norm: 5
+data:
+  batch_size: 1
+  chunk_size: 32000
+  data_root: F:/ISSAI_KSC2_unpacked/DIHARD_DATA_INFO/CONCATED_DFS_train_crowdsourced_tvnews_tts=5000_k=2.csv
+  least_size: 16000
+  num_workers: 0
+  pin_memory: true
+  sample_rate: 16000
+  seed: 42
+  shuffle: false
+  test_percent: 0.1
+  total_percent: 0.02
+  train_percent: 0.8
+  valid_percent: 0.1
+early_stop:
+  mode: min
+  patience: 8
+model:
+  K: 250
+  clip_norm: *id001
+  d_ff_inter: 1024
+  d_ff_intra: 1024
+  d_inter: 512
+  d_intra: 512
+  dropout: 0.0
+  encoder_type_norm: ln
+  kernel_size: 8
+  num_heads_inter: 8
+  num_heads_intra: 8
+  num_layers: 2
+  num_layers_inter: 8
+  num_layers_intra: 8
+  optim_params: &id002
+    Adam:
+      lr: 0.00015
+    SGD:
+      lr: 0.0005
+      momentum: 0.9
+    type: Adam
+  out_channels: 512
+  scheduler: &id003
+    factor: 0.5
+    min_lr: 1.0e-08
+    patience: 2
+  speaker_num: 2
+  training: &id004
+    alpha: 0.55
+    beta: 0.45
+model_ckpt:
+  filename: '{epoch:02d}'
+  monitor: val_loss
+  save_last: true
+optim: *id002
+scheduler: *id003
+trainer:
+  accelerator: gpu
+  accumulate_grad_batches: 1
+  benchmark: true
+  check_val_every_n_epoch: 1
+  detect_anomaly: false
+  deterministic: false
+  devices: 1
+  enable_model_summary: true
+  fast_dev_run: false
+  gradient_clip_val: 5
+  max_epochs: -1
+  num_nodes: 1
+  precision: 32
+  profiler: false
+training: *id004
+xp_config:
+  dataset: ISSAI_KSC2
+  model_name: SuperiorSepformer
+  model_type: Separation
+  speaker_num: 2
